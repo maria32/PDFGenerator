@@ -1,0 +1,26 @@
+<div>
+    <label>Resize by</label>
+
+    <div class="radio-inline active" data-toggle="collapse" data-target="#resize-percentage">
+        <label><input type="radio" name="resize">percentage</label>
+    </div>
+    <div class="radio-inline" data-toggle="collapse" data-target="#resize-pixels">
+        <label><input type="radio" name="resize">pixels</label>
+    </div>
+
+    <div class="collapse col-sm-10" id="resize-percentage">
+        <div class="controls-pane row">
+            <div class="col-sm-5">
+                <label class="col-sm-6" for="horizontal">Horizontal:</label>
+                <input class="col-sm-4" extension="text" id="horizontal" value="100"/>
+                <span class="input-group-addon col-sm-1">%</span>
+            </div>
+
+            <div class="col-sm-5">
+                <label class="col-sm-6" for="vertical">Vertical:</label>
+                <input class="col-sm-4" extension="text" id="vertical" value="100"/>
+                <span class="input-group-addon col-sm-1">%</span>
+            </div>
+        </div>
+    </div>
+</div>
