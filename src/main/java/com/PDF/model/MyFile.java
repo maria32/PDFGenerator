@@ -1,11 +1,15 @@
 package com.PDF.model;
 
+import com.PDF.deserializer.MyFileDeserializer;
 import com.PDF.model.settings.DocumentSettings;
 import com.PDF.model.settings.ImageSettings;
 import com.PDF.model.settings.Settings;
 import com.PDF.model.settings.TextSettings;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.io.FilenameUtils;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -14,13 +18,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by martanase on 12/12/2016.
  */
-
+@JsonDeserialize(using = MyFileDeserializer.class)
 public class MyFile<S extends Settings> {
 
     private static final AtomicInteger count = new AtomicInteger(0);
-    private static final List<String> image = Arrays.asList("jpg", "png", "bmp");
-    private static final List<String> document = Arrays.asList("doc", "docx");
-    private static final List<String> text = Arrays.asList("txt", "rtf");
+    public static final List<String> image = Arrays.asList("jpg", "png", "bmp");
+    public static final List<String> document = Arrays.asList("doc", "docx");
+    public static final List<String> text = Arrays.asList("txt", "rtf");
 
     private Integer id;
     private String name;
@@ -28,26 +32,37 @@ public class MyFile<S extends Settings> {
     private File file;
     private S settings;
 
+    public MyFile(){ //used by ajax call
+
+    }
     public MyFile(File file) {
         if(this.id == null)
             this.id = count.incrementAndGet();
         this.file = file;
         this.name = FilenameUtils.getBaseName(file.getName());
-        this.extension = FilenameUtils.getExtension(file.getName());
+        this.extension = FilenameUtils.getExtension(file.getName()).toLowerCase();
         //set "settings" type based on extension
+        Settings settings;
         if(image.contains(extension)){
-            setSettings((S) new ImageSettings());
+            settings = new ImageSettings();
         } else if(document.contains(extension)) {
-            setSettings((S) new DocumentSettings());
+            settings = new DocumentSettings();
         }else if(text.contains(extension)){
-            setSettings((S) new TextSettings());
+            settings = new TextSettings();
         }else{
-            System.out.println("Eroare la setare 'settings'");
+            settings = new Settings();
+            System.out.println("eroare la setare campuri 'Settings'");
         }
+        setSettings((S) settings);
     }
+
 
     public Integer getId() {
         return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getName() {

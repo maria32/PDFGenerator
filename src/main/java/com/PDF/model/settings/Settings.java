@@ -11,6 +11,8 @@ public class Settings {
 
     private String type;
 
+    private boolean pageBreak;
+
     public String getType() {
         return type;
     }
@@ -19,4 +21,11 @@ public class Settings {
         this.type = type;
     }
 
+    public boolean isPageBreak() {
+        return pageBreak;
+    }
+
+    public void setPageBreak(boolean pageBreak) {
+        this.pageBreak = pageBreak;
+    }
 }

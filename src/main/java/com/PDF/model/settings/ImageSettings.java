@@ -6,11 +6,17 @@ package com.PDF.model.settings;
 public class ImageSettings extends Settings{
 
     private int scale;
-
-    private boolean position_absolute = true;
+    private int rotationDegrees;
+    private boolean positionAbsolute = true;
 
     public ImageSettings() {
         super.setType("image");
+    }
+
+    public ImageSettings(int scale, int rotationDegrees, boolean positionAbsolute) {
+        this.scale = scale;
+        this.rotationDegrees = rotationDegrees;
+        this.positionAbsolute = positionAbsolute;
     }
 
     public int getScale() {
@@ -21,11 +27,19 @@ public class ImageSettings extends Settings{
         this.scale = scale;
     }
 
-    public boolean isPosition_absolute() {
-        return position_absolute;
+    public int getRotationDegrees() {
+        return rotationDegrees;
     }
 
-    public void setPosition_absolute(boolean position_absolute) {
-        this.position_absolute = position_absolute;
+    public void setRotationDegrees(int rotationDegrees) {
+        this.rotationDegrees = rotationDegrees;
+    }
+
+    public boolean isPositionAbsolute() {
+        return positionAbsolute;
+    }
+
+    public void setPositionAbsolute(boolean positionAbsolute) {
+        this.positionAbsolute = positionAbsolute;
     }
 }

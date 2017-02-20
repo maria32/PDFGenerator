@@ -4,14 +4,11 @@ import com.PDF.exception.StorageException;
 import com.PDF.exception.StorageFileNotFoundException;
 import com.PDF.model.MyFile;
 import com.PDF.model.StorageProperties;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
+import com.PDF.model.settings.ImageSettings;
+import com.itextpdf.text.*;
 import com.itextpdf.text.Image;
-import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.sun.org.apache.xpath.internal.SourceTree;
-import com.sun.xml.internal.ws.binding.FeatureListUtil;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -21,7 +18,6 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -32,6 +28,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
+
 
 /**
  * Created by martanase on 12/9/2016.
@@ -80,8 +77,9 @@ public class FileSystemStorageService implements StorageService{
         } catch (IOException e) {
             throw new StorageException("Failed to read stored files", e);
         }
-
     }
+
+
 
     @Override
     public Path load(String filename) {
@@ -130,7 +128,7 @@ public class FileSystemStorageService implements StorageService{
         }
 
         for (File file : currentDirectory.listFiles()) {
-            if(!filesInMyFiles.contains(file)) {
+            if(!filesInMyFiles.contains(file) && !file.isDirectory()) {
                 myFiles.add(new MyFile(file));
                 filesInMyFiles.add(file);
             }
@@ -172,7 +170,36 @@ public class FileSystemStorageService implements StorageService{
         return uploadDir.exists();
     }
 
-    @Override
+    public void updateOrderOfFiles(List<Integer> listOfOrder){
+
+        List<MyFile> myFilesNewOrder = new ArrayList<>();
+
+        if(myFiles.size() != listOfOrder.size()){
+            System.out.println("Eroare de reordonare in FileSystemStorageService:updateOrderOfFiles()");
+        } else {
+            for (Integer id : listOfOrder) {
+                for (MyFile myFile : myFiles) {
+                    if (myFile.getId() == id) {
+                        myFilesNewOrder.add(myFile);
+                    }
+                }
+            }
+            myFiles = new ArrayList<>();
+            myFiles = myFilesNewOrder;
+        }
+    }
+
+    public void updateSettingsOfFile(List<MyFile> files){
+        System.out.println("Updating...");
+        for(MyFile myFile: files){
+            System.out.println(myFile.getName());
+        }
+        if(files.size() == myFiles.size()){
+            myFiles = files;
+        }
+
+    }
+
     public String generatePDF() {
         Document document = new Document();
         try {
@@ -184,24 +211,41 @@ public class FileSystemStorageService implements StorageService{
             File pdfFile = new File(uploadPath + "output/GeneratedPDF.pdf");
             if(!pdfFile.exists())
                 pdfFile.createNewFile();
+            else {
+                pdfFile.delete();
+                pdfFile.createNewFile();
+            }
             PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
             document.open();
+            FontFactory.defaultEmbedding = true;
             for(MyFile myFile : myFiles){
+                if(myFile.getSettings().isPageBreak()){
+                    System.out.println("pageBreak");
+                    document.newPage();
+                }
                 switch(myFile.getSettings().getType()){
                     case "image" :
                         Image image = Image.getInstance(myFile.getFile().getPath());
+                        ImageSettings imageSettings = ((ImageSettings)myFile.getSettings());
+                        image.setRotationDegrees(imageSettings.getRotationDegrees());
                         document.add(image);
                         break;
                     case "text" :
+                        String FONT = "resources/fonts/FreeSans.ttf";
+                        Font font = FontFactory.getFont(FONT, "Cp1250", BaseFont.EMBEDDED);
+                        BaseFont helvetica = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.EMBEDDED);
                         document.add(new Paragraph(org.apache.commons.io.FileUtils
                                 .readFileToString(myFile.getFile())));
-                        break;
-                    case "document" :
 
                         break;
+                    case "document" :
+                        break;
                 }
+
             }
             document.close();
+            //opening the file in default application (Acrobat Reader)
+            Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + pdfFile);
         } catch (Exception e) {
             e.printStackTrace();
         }

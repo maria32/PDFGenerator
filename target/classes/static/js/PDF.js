@@ -8,7 +8,8 @@ angular
         'ngFileUpload',
         'ngSanitize', //for using of ng-bind-html
         'ngRoute',
-        'ui.bootstrap'
+        'ui.bootstrap',
+        'ui.sortable' //for changing order of files
     ])
 
     .run(function ($rootScope, $location) {
@@ -23,7 +24,7 @@ angular
             templateUrl: 'template/upload.html',
             controller: 'UploadCtrl'
         }).
-        when('/export', {
+        when('/settings', {
             templateUrl: 'template/files-settings.html',
             controller: 'SettingsController'
         }).

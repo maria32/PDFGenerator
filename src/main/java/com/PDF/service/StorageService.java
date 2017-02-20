@@ -29,5 +29,11 @@ public interface StorageService {
 
     boolean deleteFile(String name, String type);
 
+    void updateOrderOfFiles(List<Integer> listOfOrder);
+
+    void updateSettingsOfFile(List<MyFile> files);
+
     String generatePDF();
+
+
 }
