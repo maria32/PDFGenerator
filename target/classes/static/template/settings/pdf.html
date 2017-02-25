@@ -1,0 +1,3 @@
+<span class="badge progress-bar-info">{{file.settings.pages}}</span> pages<br>
+Select pages: <input type="text" ng-model="file.settings.pagesIncluded" placeholder="1-2,4" required><br>
+<span class="text-danger" ng-show="!file.settings.pagesIncluded">"Select pages" field is empty. If you want all pages, please insert "All", else insert the pages you want to include (eg.: "1-2,4")</span>

@@ -9,7 +9,8 @@ angular
         'ngSanitize', //for using of ng-bind-html
         'ngRoute',
         'ui.bootstrap',
-        'ui.sortable' //for changing order of files
+        'ui.sortable', //for changing order of files
+        'nya.bootstrap.select' //for <select> multiple nice loop with ng-repeat
     ])
 
     .run(function ($rootScope, $location) {

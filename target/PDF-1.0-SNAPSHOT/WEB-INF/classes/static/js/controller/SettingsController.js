@@ -2,6 +2,7 @@ angular.module('PDF')
     .controller('SettingsController', function ($scope, $http, Upload, $sce) {
 
         $scope.files = [];
+        $scope.alignmentSelected=[];
         // $scope.log = '';
             $http({
                 method: 'GET',
@@ -12,9 +13,22 @@ angular.module('PDF')
                     $scope.files = response.data;
                     // $("doc-pages-to-bind-1").val($scope.files[0].settings.pagesToBind);
                 } else {
-                    console.log("AUTHENTICATION ERROR!");
+                    console.log("No Files or files not retrieved correctly");
                 }
             });
+
+        $scope.alignmentOptions = [];
+        $http({
+            method: 'GET',
+            url: '/update/settings/image-alignment-options/'
+        }).then(function successCallback(response) {
+            if (response.data != "") {
+                $scope.alignmentOptions = response.data;
+                console.log($scope.alignmentOptions);
+            } else {
+                console.log("Image Alignment options GET error");
+            }
+        });
 
         $scope.deleteFile = function (file, index) {
             Upload.upload({
@@ -42,14 +56,6 @@ angular.module('PDF')
                 var listOfOrder =  $scope.files.map(function(item){
                     return item.id;
                 });
-                // $scope.files = logEntry;
-                console.log(listOfOrder);
-
-                // Upload.upload({
-                //     method: 'POST',
-                //     url: '/update/order-of-files',
-                //     data: listNewOrder
-                // });
 
                 $.ajax({
                     method: 'POST',
@@ -70,6 +76,11 @@ angular.module('PDF')
             for(var i = 0; i < $scope.files.length; i++) {
                 var file = $scope.files[i];
                 $scope.files[i].settings.pageBreak = document.getElementById('settings-' + file.id +  '-page-break').checked;
+                //pdf
+                if($scope.files[i].settings.type == "pdf"){
+                    if($scope.files[i].settings.pagesIncluded == "")
+                        $scope.files[i].settings.pagesIncluded = "All";
+                }
                 console.log($scope.files[i]);
             }
 
@@ -89,10 +100,11 @@ angular.module('PDF')
         $scope.generatePDF = function(){
             Upload.upload({
                 method: 'GET',
-                headers: {'Content-Type': 'application/json'},
+                // headers: {'Content-Type': 'application/json'},
                 url: '/convert/generatePDF'
-            }).then(function (resp) {
-                if(resp.data != ''){
+            }).then(function (response) {
+                console.log(response.data);
+                if(response.data != ''){
 
                 }else{
                     console.log('GeneratePDF ERROR');

@@ -36,4 +36,10 @@ public class FileUpdateController {
         System.out.println("******I am in the update settings of files controller java");
         storageService.updateSettingsOfFile(files);
     }
+
+    @RequestMapping(value="/settings/image-alignment-options/", method = RequestMethod.GET)
+    @ResponseBody
+    public List<String> getImageAlignmentOptions() {
+        return storageService.getImageAlignmentOptions();
+    }
 }

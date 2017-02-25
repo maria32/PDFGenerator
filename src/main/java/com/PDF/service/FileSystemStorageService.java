@@ -5,10 +5,11 @@ import com.PDF.exception.StorageFileNotFoundException;
 import com.PDF.model.MyFile;
 import com.PDF.model.StorageProperties;
 import com.PDF.model.settings.ImageSettings;
+import com.PDF.model.settings.PDFSettings;
 import com.itextpdf.text.*;
 import com.itextpdf.text.Image;
-import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.*;
+import javafx.scene.transform.Rotate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -18,6 +19,7 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -47,6 +49,14 @@ public class FileSystemStorageService implements StorageService{
     @Autowired
     @Value("${upload.directory}")
     public String uploadPath;
+
+    public String getUploadPath() {
+        return uploadPath;
+    }
+
+    public void setUploadPath(String uploadPath) {
+        this.uploadPath = uploadPath;
+    }
 
     @Autowired
     public FileSystemStorageService(StorageProperties properties) {
@@ -101,6 +111,15 @@ public class FileSystemStorageService implements StorageService{
         } catch (MalformedURLException e) {
             throw new StorageFileNotFoundException("Could not read file: " + filename, e);
         }
+    }
+
+    @Override
+    public List<String> getImageAlignmentOptions() {
+        List<String> imageAlignmentOptions = new ArrayList<>();
+        for (ImageSettings.ImageAlignment imageAlignmentOption : ImageSettings.ImageAlignment.values()) {
+            imageAlignmentOptions.add(imageAlignmentOption.toString());
+        }
+        return imageAlignmentOptions;
     }
 
     @Override
@@ -215,8 +234,9 @@ public class FileSystemStorageService implements StorageService{
                 pdfFile.delete();
                 pdfFile.createNewFile();
             }
-            PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
+            PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
             document.open();
+            document.setMargins(30, 30, 45, 30);
             FontFactory.defaultEmbedding = true;
             for(MyFile myFile : myFiles){
                 if(myFile.getSettings().isPageBreak()){
@@ -226,19 +246,57 @@ public class FileSystemStorageService implements StorageService{
                 switch(myFile.getSettings().getType()){
                     case "image" :
                         Image image = Image.getInstance(myFile.getFile().getPath());
-                        ImageSettings imageSettings = ((ImageSettings)myFile.getSettings());
+                        //scale
+                        ImageSettings imageSettings = (ImageSettings)myFile.getSettings();
+                        if(imageSettings.getScale().equals("fit")){
+                            image.scaleToFit(PageSize.A4.getWidth() - (document.leftMargin() + document.rightMargin()), PageSize.A4.getHeight() - (document.topMargin() + document.bottomMargin()));
+                        }
+                        //absolute position
+                        //image.setAbsolutePosition(imageSettings.getPositionAbsolute().getX(), imageSettings.getPositionAbsolute().getY());
+                        //alignment
+                        List<ImageSettings.ImageAlignment> alignmentsList = imageSettings.getAlignment();
+                        int alignment = 0;
+                        for(ImageSettings.ImageAlignment imageAlignment: alignmentsList){
+                            alignment+=imageAlignment.getValue();
+                        }
+                        image.setAlignment(alignment);
+                        //transparency doesn't work. It only works for monochrome or grayscale masks
+                        //image.setTransparency(new int[] {0xF0, 0xFF});
+                        //rotation
                         image.setRotationDegrees(imageSettings.getRotationDegrees());
                         document.add(image);
                         break;
                     case "text" :
+                        document.add(Chunk.NEWLINE); // solution to image aligment TEXTWRAP
                         String FONT = "resources/fonts/FreeSans.ttf";
-                        Font font = FontFactory.getFont(FONT, "Cp1250", BaseFont.EMBEDDED);
-                        BaseFont helvetica = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.EMBEDDED);
-                        document.add(new Paragraph(org.apache.commons.io.FileUtils
-                                .readFileToString(myFile.getFile())));
+//                        Font font = FontFactory.getFont(FONT, "Cp1250", BaseFont.EMBEDDED);
+//                        BaseFont helvetica = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.EMBEDDED);
+//                        Paragraph pHeading = new Paragraph(new Chunk(new Phrase(org.apache.commons.io.FileUtils.readFileToString(myFile.getFile())).toString(), FontFactory.getFont(FontFactory.HELVETICA, 12, Font.NORMAL)));
+                        //pHeading.setAlignment(Paragraph.ALIGN_RIGHT);
+                        //document.add(pHeading);
+                        document.add(new Phrase(org.apache.commons.io.FileUtils.readFileToString(myFile.getFile()))); // I used Phrase instead of Paragraph
 
                         break;
                     case "document" :
+                        break;
+                    case "pdf" :
+                        Rectangle originalPageSize = pdfWriter.getPageSize();
+                        document.newPage();
+                        PdfContentByte cb = pdfWriter.getDirectContent();
+                        PdfReader reader = new PdfReader(myFile.getFile().getAbsolutePath());
+                        PDFSettings pdfSettings = (PDFSettings) myFile.getSettings();
+                        if(!pdfSettings.getPagesIncluded().equals("All")){
+                            reader.selectPages(pdfSettings.getPagesIncluded());
+                        }
+                        for(int i = 1; i <= reader.getNumberOfPages(); i++) {
+                            Rectangle pageSize = reader.getPageSize(i);
+                            document.setPageSize(pageSize);
+                            document.newPage();
+                            PdfImportedPage page = pdfWriter.getImportedPage(reader, i);
+                            cb.addTemplate(page, 0, 0);
+                        }
+                        document.setPageSize(originalPageSize);
+                        document.newPage();
                         break;
                 }
 

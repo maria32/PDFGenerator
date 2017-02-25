@@ -1,16 +1,15 @@
 package com.PDF.model;
 
 import com.PDF.deserializer.MyFileDeserializer;
-import com.PDF.model.settings.DocumentSettings;
-import com.PDF.model.settings.ImageSettings;
-import com.PDF.model.settings.Settings;
-import com.PDF.model.settings.TextSettings;
+import com.PDF.model.settings.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.itextpdf.text.pdf.PdfReader;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,6 +24,7 @@ public class MyFile<S extends Settings> {
     public static final List<String> image = Arrays.asList("jpg", "png", "bmp");
     public static final List<String> document = Arrays.asList("doc", "docx");
     public static final List<String> text = Arrays.asList("txt", "rtf");
+    public static final List<String> pdf = Arrays.asList("pdf");
 
     private Integer id;
     private String name;
@@ -49,6 +49,14 @@ public class MyFile<S extends Settings> {
             settings = new DocumentSettings();
         }else if(text.contains(extension)){
             settings = new TextSettings();
+        }else if(pdf.contains(extension)){
+            try {
+                PdfReader reader = new PdfReader(getFile().getAbsolutePath());
+                settings = new PDFSettings(reader.getNumberOfPages());
+            }catch (IOException e){
+                settings = new PDFSettings();
+                e.printStackTrace();
+            }
         }else{
             settings = new Settings();
             System.out.println("eroare la setare campuri 'Settings'");
