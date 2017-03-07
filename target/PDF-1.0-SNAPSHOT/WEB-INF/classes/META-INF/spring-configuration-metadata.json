@@ -1,0 +1,14 @@
+{
+  "groups": [{
+    "name": "storage",
+    "type": "com.PDF.model.StorageProperties",
+    "sourceType": "com.PDF.model.StorageProperties"
+  }],
+  "properties": [{
+    "name": "storage.location",
+    "type": "java.lang.String",
+    "sourceType": "com.PDF.model.StorageProperties",
+    "defaultValue": "upload"
+  }],
+  "hints": []
+}
