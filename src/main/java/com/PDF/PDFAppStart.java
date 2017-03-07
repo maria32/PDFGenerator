@@ -19,7 +19,6 @@ import java.net.URL;
  * Created by martanase on 12/9/2016.
  */
 //@Configuration
-//@ComponentScan(basePackages = { "com.endava.weatherapp" })
 //@ImportResource(value = { "classpath:beans.xml" })
 @SpringBootApplication
 @Configuration

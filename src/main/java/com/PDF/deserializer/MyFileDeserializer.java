@@ -1,6 +1,7 @@
 package com.PDF.deserializer;
 
 import com.PDF.model.MyFile;
+import com.PDF.model.Settings;
 import com.PDF.model.settings.*;
 import com.PDF.model.settings.image.PositionAbsolute;
 import com.fasterxml.jackson.core.JsonParser;
@@ -9,7 +10,6 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.node.IntNode;
 
 
 import java.io.File;
@@ -53,10 +53,10 @@ public class MyFileDeserializer extends StdDeserializer<MyFile>{
             int rotationDegrees = settingsNode.get("rotationDegrees").asInt();
             //alignment
             List<String> alignmentsStringList = new ObjectMapper().convertValue(settingsNode.get("alignment"), List.class);
-            List<ImageSettings.ImageAlignment> alignment = new ArrayList<>();
+            List<SettingsImage.ImageAlignment> alignment = new ArrayList<>();
             for(String align : alignmentsStringList){
                 System.out.println(align);
-                alignment.add(ImageSettings.ImageAlignment.valueOf(align));
+                alignment.add(SettingsImage.ImageAlignment.valueOf(align));
             }
             //position absolute
             PositionAbsolute positionAbsolute = null;
@@ -66,17 +66,17 @@ public class MyFileDeserializer extends StdDeserializer<MyFile>{
                 System.out.println("x= " + positionAbsolute.getX());
                 System.out.println("y= " + positionAbsolute.getY());
             }
-            settings = new ImageSettings(scale, alignment, rotationDegrees, positionAbsolute);
+            settings = new SettingsImage(scale, alignment, rotationDegrees, positionAbsolute);
         } else if(document.contains(extension)) {
             //fields to be added
-            settings = new DocumentSettings();
+            settings = new SettingsDocument();
         }else if(text.contains(extension)) {
             //fields to be added
-            settings = new TextSettings();
+            settings = new SettingsText();
         }else if(pdf.contains(extension)){
             int pages = settingsNode.get("pages").asInt();
             String pagesIncluded = settingsNode.get("pagesIncluded").asText();
-            settings = new PDFSettings(pages, pagesIncluded);
+            settings = new SettingsPDF(pages, pagesIncluded);
         }else{
             settings = new Settings();
             System.out.println("Deserializer: eroare la setare campuri 'Settings'");

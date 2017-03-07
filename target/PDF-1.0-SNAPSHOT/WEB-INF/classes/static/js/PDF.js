@@ -14,8 +14,7 @@ angular
     ])
 
     .run(function ($rootScope, $location) {
-
-
+        $rootScope.filesNo;
 
     })
 
@@ -25,9 +24,13 @@ angular
             templateUrl: 'template/upload.html',
             controller: 'UploadCtrl'
         }).
+        when('/pdf-settings', {
+            templateUrl: 'template/pdf-settings.html',
+            controller: 'PDFSettingsCtrl'
+        }).
         when('/settings', {
             templateUrl: 'template/files-settings.html',
-            controller: 'SettingsController'
+            controller: 'FilesSettingsCtrl'
         }).
         when('image-settings', {
             templateUrl: 'template/settings/image.html'

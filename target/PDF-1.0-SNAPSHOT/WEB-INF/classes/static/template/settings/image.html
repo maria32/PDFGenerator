@@ -1,18 +1,17 @@
-<ul class="list-group">
 
-    <li class="list-group-item" style="display: flex;">
+    <div style="display: flex;">
         <span>Scale</span>
-        <select class="input-group-sm col-sm-2" ng-model="file.settings.scale">
+        <select class="input-group-sm col-sm-2" ng-model="file.settings.size">
             <option value="original">Original size</option>
             <option value="fit">Fit to page</option>
             <option value="custom">Custom</option>
         </select>
-    </li><br>
-    <li class="list-group-item" style="display: flex;">
+    </div><br>
+    <div style="display: flex;">
         Rotate <input type="text" ng-model="file.settings.rotationDegrees" class="input-group-sm col-sm-2">
-    </li><br>
+    </div><br>
 
-    <li class="list-group-item">
+    <div>
         Position: <br>
         <input type="radio" name="position" value="alignment" ng-model="position">Alignment <button ng-enabled="position == 'alignment'"><span class="glyphicon glyphicon glyphicon-pencil" ng-click="showDetails = ! showDetails"></span></button><span ng-show="position == 'alignment'">{{file.settings.alignment}}</span><br>
             <select class="selectpicker" ng-model="file.settings.alignment" ng-options="option for option in alignmentOptions" multiple ng-show="showDetails"></select>
@@ -21,7 +20,7 @@
                 x <input type="number" ng-model="file.settings.absolutePosition.x">
                 y <input type="number" ng-model="file.settings.absolutePosition.y">
             </div>
-    </li><br>
+    </div><br>
 
     Resize by
     <div class="radio-inline active" data-toggle="collapse" data-target="#resize-percentage">

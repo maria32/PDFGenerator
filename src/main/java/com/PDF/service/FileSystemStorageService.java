@@ -3,13 +3,14 @@ package com.PDF.service;
 import com.PDF.exception.StorageException;
 import com.PDF.exception.StorageFileNotFoundException;
 import com.PDF.model.MyFile;
+import com.PDF.model.PDFSettings;
+import com.PDF.model.PDFWatermark;
 import com.PDF.model.StorageProperties;
-import com.PDF.model.settings.ImageSettings;
-import com.PDF.model.settings.PDFSettings;
+import com.PDF.model.settings.SettingsImage;
+import com.PDF.model.settings.SettingsPDF;
 import com.itextpdf.text.*;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.*;
-import javafx.scene.transform.Rotate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -19,7 +20,6 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -41,6 +41,9 @@ public class FileSystemStorageService implements StorageService{
     private final Path rootLocation;
 
     private static List<MyFile> myFiles;
+
+    @Autowired
+    private PDFSettingsService pdfSettingsService;
 
     static{
         myFiles = new ArrayList<>();
@@ -116,7 +119,7 @@ public class FileSystemStorageService implements StorageService{
     @Override
     public List<String> getImageAlignmentOptions() {
         List<String> imageAlignmentOptions = new ArrayList<>();
-        for (ImageSettings.ImageAlignment imageAlignmentOption : ImageSettings.ImageAlignment.values()) {
+        for (SettingsImage.ImageAlignment imageAlignmentOption : SettingsImage.ImageAlignment.values()) {
             imageAlignmentOptions.add(imageAlignmentOption.toString());
         }
         return imageAlignmentOptions;
@@ -235,28 +238,40 @@ public class FileSystemStorageService implements StorageService{
                 pdfFile.createNewFile();
             }
             PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
+        //pdf settings: password, watermark
+            PDFSettings settingsPDF = pdfSettingsService.getPDFSettings();
+            if(settingsPDF.getPassword() != null && !settingsPDF.getPassword().equals("")){
+                String owner = "Magda";
+                pdfWriter.setEncryption(settingsPDF.getPassword().getBytes(), owner.getBytes(), PdfWriter.ALLOW_PRINTING, PdfWriter.ENCRYPTION_AES_128);
+            }
+            if(settingsPDF.getWatermarkPic() != null){
+                PDFWatermark pdfWatermark = new PDFWatermark();
+                pdfWatermark.setPdfSettings(settingsPDF);
+                pdfWriter.setPageEvent(pdfWatermark);
+            }
+
+        //end of pdf settings: password, watermark
             document.open();
             document.setMargins(30, 30, 45, 30);
             FontFactory.defaultEmbedding = true;
             for(MyFile myFile : myFiles){
                 if(myFile.getSettings().isPageBreak()){
-                    System.out.println("pageBreak");
                     document.newPage();
                 }
                 switch(myFile.getSettings().getType()){
                     case "image" :
                         Image image = Image.getInstance(myFile.getFile().getPath());
                         //scale
-                        ImageSettings imageSettings = (ImageSettings)myFile.getSettings();
+                        SettingsImage imageSettings = (SettingsImage)myFile.getSettings();
                         if(imageSettings.getScale().equals("fit")){
                             image.scaleToFit(PageSize.A4.getWidth() - (document.leftMargin() + document.rightMargin()), PageSize.A4.getHeight() - (document.topMargin() + document.bottomMargin()));
                         }
                         //absolute position
                         //image.setAbsolutePosition(imageSettings.getPositionAbsolute().getX(), imageSettings.getPositionAbsolute().getY());
                         //alignment
-                        List<ImageSettings.ImageAlignment> alignmentsList = imageSettings.getAlignment();
+                        List<SettingsImage.ImageAlignment> alignmentsList = imageSettings.getAlignment();
                         int alignment = 0;
-                        for(ImageSettings.ImageAlignment imageAlignment: alignmentsList){
+                        for(SettingsImage.ImageAlignment imageAlignment: alignmentsList){
                             alignment+=imageAlignment.getValue();
                         }
                         image.setAlignment(alignment);
@@ -284,7 +299,7 @@ public class FileSystemStorageService implements StorageService{
                         document.newPage();
                         PdfContentByte cb = pdfWriter.getDirectContent();
                         PdfReader reader = new PdfReader(myFile.getFile().getAbsolutePath());
-                        PDFSettings pdfSettings = (PDFSettings) myFile.getSettings();
+                        SettingsPDF pdfSettings = (SettingsPDF) myFile.getSettings();
                         if(!pdfSettings.getPagesIncluded().equals("All")){
                             reader.selectPages(pdfSettings.getPagesIncluded());
                         }

@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.itextpdf.text.pdf.PdfReader;
 import org.apache.commons.io.FilenameUtils;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -44,17 +42,17 @@ public class MyFile<S extends Settings> {
         //set "settings" type based on extension
         Settings settings;
         if(image.contains(extension)){
-            settings = new ImageSettings();
+            settings = new SettingsImage();
         } else if(document.contains(extension)) {
-            settings = new DocumentSettings();
+            settings = new SettingsDocument();
         }else if(text.contains(extension)){
-            settings = new TextSettings();
+            settings = new SettingsText();
         }else if(pdf.contains(extension)){
             try {
                 PdfReader reader = new PdfReader(getFile().getAbsolutePath());
-                settings = new PDFSettings(reader.getNumberOfPages());
+                settings = new SettingsPDF(reader.getNumberOfPages());
             }catch (IOException e){
-                settings = new PDFSettings();
+                settings = new SettingsPDF();
                 e.printStackTrace();
             }
         }else{

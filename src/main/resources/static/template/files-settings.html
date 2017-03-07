@@ -1,20 +1,18 @@
 <!--Uploaded files-->
-<a class="btn btn-default" role="button" data-toggle="collapse" data-target="#uploaded"><span class="glyphicon glyphicon glyphicon glyphicon-menu-down"></span>  Change settings</a><br><br>
-<div class="container">
-<div class="collapse panel-group" role="tablist" aria-multiselectable="true" id="uploaded">
-    <ul ui-sortable="sortableFileSettings" ng-model="files">
-        <div class="panel-group" ng-repeat="file in files">
-            <div class="panel panel-default">
-                <div class="panel-heading" role="tab" id="heading-{{file.id}}" style="cursor: move;">
-                    <h4 class="panel-title">
-                        <a style="cursor: default;"><i extension="button" class="glyphicon glyphicon-remove" ng-click="deleteFile(file, $index)"></i></a>
+    <ul class="file-item" ui-sortable="sortableFileSettings" ng-model="files">
+        <div class="files panel-group" ng-repeat="file in files" style="display: flex;">
+            <div class="panel">
+                <div class=" panel-heading" role="tab" id="heading-{{file.id}}" style="cursor: move;">
+                    <h4 class="files panel-title">
+                        <span class="index badge">{{$index}}</span>
                         <a role="button" data-toggle="collapse" data-parent="#uploaded" data-target="#settings-{{file.id}}" aria-expanded="true" style="cursor: default;">
                             {{file.name}}.{{file.extension}} ({{file.settings.type}})
                         </a>
+                        <a style="cursor: default;"><i extension="button" class="glyphicon glyphicon-remove" ng-click="deleteFile(file, $index)"></i></a>
                     </h4>
                 </div>
                 <!--File settings collapsible-->
-                <div id="settings-{{file.id}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{file.id}}">
+                <div id="settings-{{file.id}}" class="my-panel-content panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{file.id}}">
                     <div class="panel-body">
                         <div ng-show="file.settings.type != 'pdf'">
                             <input type="checkbox" id="settings-{{file.id}}-page-break" ng-model="file.settings.pageBreak">Start on a new page
@@ -28,9 +26,7 @@
             <button class="btn btn-info right" ng-click="saveAllChanges()">Save all changes</button>
         </div>
     </ul>
-</div>
-
-</div><br><br>
+<br><br>
 
 <div>
     <div class="btn btn-info" ng-click="generatePDF()" >Generate PDF</div><br><br>
