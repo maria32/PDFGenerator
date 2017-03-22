@@ -1,6 +1,7 @@
 package com.PDF.service;
 
 import com.PDF.model.PDFSettings;
+import com.PDF.model.watermark.ImageWatermark;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -17,6 +18,8 @@ public interface PDFSettingsService {
     PDFSettings createPDFSettings(PDFSettings pdfSettings);
 
     File addFile(MultipartFile file);
+
+    ImageWatermark addImageWatermark(MultipartFile file);
 
     void deleteWatermark();
 

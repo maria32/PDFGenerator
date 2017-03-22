@@ -1,38 +1,155 @@
-<div>
+<div class="my-content-container">
     <p class="popover-title my-title">PDF Settings</p>
     <div>
-        <span class="text-primary" ng-show="pdfSettings.password == '' || pdfSettings.password == null">No password set.</span>
+        <span class="text-primary"
+              ng-show="pdfSettings.password == '' || pdfSettings.password == null">No password set.</span>
     </div>
     <div>
-        <span class="text-primary" ng-show="pdfSettings.watermarkPic == '' || fileName == null">No watermark set.</span>
+        <span class="text-primary" ng-show="pdfSettings.imageWatermark.watermark == null || fileName == null">No watermark set.</span>
     </div>
     <!--<input type="checkbox" id="password-checkbox" ng-click="setPassword(this)" />-->
     <hr>
 
 
-        <div>
-            Password
-            <input type="password" id="password" ng-model="pdfSettings.password"/>
-            <i class="glyphicon glyphicon-eye-open" id="button-show-password"></i>
-        </div>
-        <hr>
-        <div>
-            Watermark
-            <div ngf-drop ngf-select ng-model="file" class="my-drop-box-watermark"
-                 ngf-drag-over-class="'dragover'" ngf-allow-dir="true"
-                 accept="image/*"
-                 ngf-pattern="'image/*'">
-                <p ng-show="pdfSettings.watermarkPic == null && file.name == null">
-                    Drop or click to upload
-                </p>
-                <p ng-show="file == null"> {{fileName}}</p>
-                <p ng-show="fileName != null || file != null">{{file.name}}</p>
-                <a href="" class="delete-button" ng-click="deleteFile($event)"><i class="glyphicon glyphicon-remove"></i></a>
+    <ul class="nav nav-pills">
+        <li class="nav-item active">
+            <a class="my-nav-item" data-target="#security-options" data-toggle="tab"><b>Security options</b></a>
+        </li>
+        <li class="nav-item">
+            <a class="my-nav-item" data-target="#watermark" data-toggle="tab"><b>Watermark</b></a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane active" id="security-options">
+            <div>
+                Password<br>
+                <input class="input" type="password" id="password" ng-model="pdfSettings.password"/>
+                <i class="glyphicon glyphicon-eye-open" id="button-show-password"></i>
+            </div>
+            <div>
+                Lock:<br>
+                <div class="input">
+                    <input type="checkbox" name="security-lock" value="lock-printing">Printing<br>
+                    <input type="checkbox" name="security-lock" value="lock-copying">Copying<br>
+                    <input type="checkbox" name="security-lock" value="lock-modifying">Modifying<br>
+                </div>
             </div>
         </div>
-        <hr>
-        <div>
-            <a href="" class="save-pdf-settings my-btn-round-xs my-btn-output" ng-click="submitPDFSettings()">Save</a>
-        </div>
+        <div class="tab-pane" id="watermark">
+            <ul class="nav nav-pills">
+                <li class="nav-item active">
+                    <a class="my-nav-item" data-target="#text-watermark" data-toggle="tab">Text</a>
+                </li>
+                <li class="nav-item">
+                    <a class="my-nav-item" data-target="#image-watermark" data-toggle="tab">Image</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" id="text-watermark">
+                    <textarea ng-model="pdfSettings.textWatermark.watermark"></textarea>
+                </div>
+                <div class="tab-pane" id="image-watermark">
+                    <div ngf-drop ngf-select ng-model="file" class="my-drop-box-watermark"
+                         ngf-drag-over-class="'dragover'" ngf-allow-dir="true"
+                         accept="image/*"
+                         ngf-pattern="'image/*'">
+                        <p ng-show="pdfSettings.imageWatermark.watermark == null && file.name == null">
+                            Drop or click to upload
+                        </p>
+                        <p ng-show="file == null"> {{fileName}}</p>
+                        <p ng-show="fileName != null || file != null">{{file.name}}</p>
+                        <a href="" class="delete-button" ng-click="deleteFile($event)"><i
+                                class="glyphicon glyphicon-remove"></i></a>
+                    </div>
 
-</div><br><br>
+                    <div class="yellow-border" ng-show="pdfSettings.imageWatermark.watermark != null">
+                        Watermark Settings
+                        <ul class="nav nav-pills">
+                            <li class="nav-item active">
+                                <a class="my-nav-item" data-target="#watermark-settings-position"
+                                   data-toggle="tab">Position</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="my-nav-item" data-target="#watermark-settings-scale"
+                                   data-toggle="tab">Scale</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="my-nav-item" data-target="#watermark-settings-opacity"
+                                   data-toggle="tab">Opacity</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane active image-picker-container" id="watermark-settings-position">
+                                <input type="radio" name="position" ng-model="pdfSettings.imageWatermark.absolutePosition" data-ng-value="false">Set position from ...<br>
+                                    <!--<select ng-show="pos == 'predefined'" class="image-picker show-html" ng-model="pdfSettings.imageWatermark.positionPredefined">
+                                        <option data-img-src="../database/small/TOP_LEFT.png" data-img-class="first" data-img-alt="Page 1" value="TOP_LEFT">Top left</option>
+                                        <option data-img-src="../database/small/TOP_CENTER.png" data-img-alt="Page 2" value="TOP_CENTER">Top center</option>
+                                        <option data-img-src="../database/small/TOP_RIGHT.png" data-img-alt="Page 2" value="TOP_RIGHT">Top right</option><br><br>
+                                        <option data-img-src="../database/small/MIDDLE_LEFT.png" data-img-alt="Page 2" value="MIDDLE_LEFT">Middle left</option>
+                                        <option data-img-src="../database/small/CENTER.png" data-img-alt="Page 2" value="CENTER">Middle Center</option>
+                                        <option data-img-src="../database/small/MIDDLE_RIGHT.png" data-img-alt="Page 9" value="MIDDLE_RIGHT">Middle right</option><br>
+                                        <option data-img-src="../database/small/BOTTOM_LEFT.png" data-img-alt="Page 10" value="BOTTOM_LEFT">Bottom left</option>
+                                        <option data-img-src="../database/small/BOTTOM_CENTER.png" data-img-alt="Page 11" value="BOTTOM_CENTER">Bottom center</option>
+                                        <option data-img-src="../database/small/BOTTOM_RIGHT.png" data-img-alt="Page 12" data-img-class="last" value="BOTTOM_RIGHT">Bottom right</option>
+                                    </select>-->
+                                    <div class="margin-bottom margin-top" ng-show="pdfSettings.imageWatermark.absolutePosition == false">
+                                        <select ng-options="p for p in positions"
+                                                ng-model="pdfSettings.imageWatermark.positionPredefined">
+                                        </select><br>
+                                    </div>
+
+                                <input type="radio" name="position" ng-model="pdfSettings.imageWatermark.absolutePosition" data-ng-value="true">Set absolute position
+                                    <div id="position-absolute-inputs" ng-show="pdfSettings.imageWatermark.absolutePosition == true">
+                                        <div class="my-left-border">
+                                            <a class="btn btn-sm btn-link" data-toggle="collapse" data-target="#sizes-info">Sizes info</a>
+                                            <div class="collapse" id="sizes-info">
+                                                <div class="my-card-box">
+                                                    <b>A4 page</b> size: 595x842 px <br>(Your page may not be A4)
+                                                    <br>
+                                                    <b>{{pdfSettings.imageWatermark.fileName}}</b> size: {{pdfSettings.imageWatermark.width}}x{{pdfSettings.imageWatermark.height}} px
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group margin-bottom">
+                                            <span class="input-group-addon">x</span>
+                                            <input class="form-control my-input-sm" type="number" ng-model="pdfSettings.imageWatermark.positionAbsolute.x">
+                                        </div>
+                                        <div class="input-group">
+                                            <span class="input-group-addon">y</span>
+                                            <input class=" my-input-sm form-control" type="number" ng-model="pdfSettings.imageWatermark.positionAbsolute.y">
+                                        </div>
+                                        <div>
+                                            <span class="text-primary">x = 0 means left of page.<br> y = 0 means bottom of page</span>
+                                        </div>
+                                    </div>
+                            </div>
+
+                            <!--Scale-->
+                            <div class="tab-pane margin-left" id="watermark-settings-scale">
+                                <input class="my-slider" type="range" name="scale" min="1" max="300" value="100"
+                                       ng-model="pdfSettings.imageWatermark.scale">
+                                <div class="input-group scale-40 margin-top margin-bottom">
+                                    <input class="my-input-sm form-control" type="number" ng-model="pdfSettings.imageWatermark.scale">
+                                    <span class="input-group-addon scale-addon">%</span>
+                                </div>
+                            </div>
+                            <div class="tab-pane margin-left" id="watermark-settings-opacity">
+                                Opacity:
+                                <input class="my-input-sm form-control inline margin-bottom" type="number" value="0.3" min="0" max="1" ng-model="pdfSettings.imageWatermark.opacity">
+                                <div>
+                                    <span class="text-primary">minim = 0, maxim = 1</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div>
+        <a href="" class="save-pdf-settings my-btn-round-xs my-btn-output" ng-click="submitPDFSettings()">Save</a>
+    </div>
+
+</div>

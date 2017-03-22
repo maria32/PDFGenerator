@@ -39,7 +39,7 @@ angular.module('PDF')
             }).then(function (resp) {
                 if(resp.data == true){
                     $scope.files.splice(index, 1);
-                    $rootScope.filesNo = $scope.files.length - 1;
+                    $rootScope.filesNo = $scope.files.length;
                 }else{
                     console.log('DELETE ERROR');
                 }
@@ -97,21 +97,6 @@ angular.module('PDF')
                 error: function(e) {
                     console.log(e);
                 }});
-        };
-
-        $scope.generatePDF = function(){
-            Upload.upload({
-                method: 'GET',
-                // headers: {'Content-Type': 'application/json'},
-                url: '/convert/generatePDF'
-            }).then(function (response) {
-                console.log(response.data);
-                if(response.data != ''){
-
-                }else{
-                    console.log('GeneratePDF ERROR');
-                }
-            });
         };
 
     });

@@ -1,6 +1,7 @@
 package com.PDF.controller;
 
 import com.PDF.model.PDFSettings;
+import com.PDF.model.watermark.ImageWatermark;
 import com.PDF.service.PDFSettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,20 +28,21 @@ public class PDFSettingsController {
         return pdfSettingsService.getPDFSettings();
     }
 
-    @RequestMapping(value="/add", method = RequestMethod.POST)
-    @ResponseBody
-    public File setPDFSettings(@RequestParam(value="file", required = false) MultipartFile file) {
-        System.out.println("set PDF settings controller - set7");
-        if(file == null){
-            pdfSettingsService.deleteWatermark();
-            return null;
-        }
-        return pdfSettingsService.addFile(file);
-    }
-
     @RequestMapping(value="/", method = RequestMethod.POST)
     public PDFSettings setPDFSettings(@RequestBody PDFSettings pdfSettings) {
         System.out.println("controller: " + pdfSettings.toString());
         return pdfSettingsService.createPDFSettings(pdfSettings);
+    }
+
+    @RequestMapping(value="/upload-watermark-picture", method = RequestMethod.POST)
+    @ResponseBody
+    public ImageWatermark addImageWatermark(@RequestParam(value="file", required = false) MultipartFile file) {
+        System.out.println("set PDF settings controller - set7");
+        if(file == null){
+            System.out.println("file is null");
+            pdfSettingsService.deleteWatermark();
+            return null;
+        }
+        return pdfSettingsService.addImageWatermark(file);
     }
 }

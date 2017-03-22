@@ -1,18 +1,12 @@
 <link href="../library/upload.css" rel="stylesheet"/>
 
-<div ng-app="PDF" ng-controller="UploadCtrl">
+<div ng-app="PDF" ng-controller="UploadCtrl" class="my-content-container">
     <p class="popover-title my-title">Upload files</p>
     <br>
-    Select:
-    <div class="btn btn-default" ngf-select ng-model="file" ngf-multiple="false">File</div>
-    or
-    <div class="btn btn-default" ngf-select="upload($files)" ngf-multiple="true">Files</div>
-    or<br>
-    Drop File:
-    <div ngf-drop ngf-select ng-model="files" class="drop-box"
-         ngf-drag-over-class="'dragover'" ngf-multiple="true" ngf-allow-dir="true"
+    <div ngf-drop ngf-select ng-model="files" class="my-drop-box-upload"
+         ngf-drag-over-class="'dragover-upload'" ngf-multiple="true" ngf-allow-dir="true"
          accept="image/*,application/pdf"
-         ngf-pattern="'image/*,application/pdf'">Drop or click to upload</div>
+         ngf-pattern="'image/*,application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel'"><p class="arrow"></p><br>Drop or click to upload</div>
     <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
     Files:
     <ul>

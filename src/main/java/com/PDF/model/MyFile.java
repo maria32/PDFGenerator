@@ -51,6 +51,7 @@ public class MyFile<S extends Settings> {
             try {
                 PdfReader reader = new PdfReader(getFile().getAbsolutePath());
                 settings = new SettingsPDF(reader.getNumberOfPages());
+                reader.close();
             }catch (IOException e){
                 settings = new SettingsPDF();
                 e.printStackTrace();

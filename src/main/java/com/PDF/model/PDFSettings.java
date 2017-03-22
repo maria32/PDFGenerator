@@ -4,6 +4,9 @@ import com.PDF.deserializer.MyFileDeserializer;
 import com.PDF.deserializer.PDFSettingsDeserializer;
 import com.PDF.model.settings.SettingsImage;
 import com.PDF.model.settings.WatermarkSettings;
+import com.PDF.model.watermark.ImageWatermark;
+import com.PDF.model.watermark.TextWatermark;
+import com.PDF.utils.LockProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.io.File;
@@ -15,15 +18,9 @@ import java.io.File;
 public class PDFSettings {
 
     private String password;
-
-    private File watermarkPic;
-
-    private WatermarkSettings settings;
-
-    private String fileName;
-
-    public PDFSettings() {
-    }
+    private LockProperties lockProperties;
+    private TextWatermark textWatermark = new TextWatermark();
+    private ImageWatermark imageWatermark = new ImageWatermark();
 
     public String getPassword() {
         return password;
@@ -33,42 +30,37 @@ public class PDFSettings {
         this.password = password;
     }
 
-    public File getWatermarkPic() {
-        return watermarkPic;
+    public LockProperties getLockProperties() {
+        return lockProperties;
     }
 
-    public void setWatermarkPic(File watermarkPic) {
-        this.watermarkPic = watermarkPic;
-        if(watermarkPic == null){
-            this.fileName = null;
-        }else {
-            this.fileName = watermarkPic.getName();
-        }
+    public void setLockProperties(LockProperties lockProperties) {
+        this.lockProperties = lockProperties;
     }
 
-    public WatermarkSettings getSettings() {
-        return settings;
+    public TextWatermark getTextWatermark() {
+        return textWatermark;
     }
 
-    public void setSettings(WatermarkSettings settings) {
-        this.settings = settings;
+    public void setTextWatermark(TextWatermark textWatermark) {
+        this.textWatermark = textWatermark;
     }
 
-    public String getFileName() {
-        return fileName;
+    public ImageWatermark getImageWatermark() {
+        return imageWatermark;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setImageWatermark(ImageWatermark imageWatermark) {
+        this.imageWatermark = imageWatermark;
     }
 
     @Override
     public String toString() {
         return "PDFSettings{" +
                 "password='" + password + '\'' +
-                ", watermarkPic=" + watermarkPic +
-                ", settings=" + settings +
-                ", fileName='" + fileName + '\'' +
+                ", lockProperties=" + lockProperties +
+                ", textWatermark=" + textWatermark +
+                ", imageWatermark=" + imageWatermark +
                 '}';
     }
 }

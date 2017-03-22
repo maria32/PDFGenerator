@@ -4,15 +4,15 @@
             <div class="panel">
                 <div class=" panel-heading" role="tab" id="heading-{{file.id}}" style="cursor: move;">
                     <h4 class="files panel-title">
-                        <span class="index badge">{{$index}}</span>
+                        <span class="index badge">{{$index + 1}} </span>
                         <a role="button" data-toggle="collapse" data-parent="#uploaded" data-target="#settings-{{file.id}}" aria-expanded="true" style="cursor: default;">
-                            {{file.name}}.{{file.extension}} ({{file.settings.type}})
+                            {{file.name}}.{{file.extension}} <span ng-show="file.settings.type == null">(unknown)</span>
                         </a>
                         <a style="cursor: default;"><i extension="button" class="glyphicon glyphicon-remove" ng-click="deleteFile(file, $index)"></i></a>
                     </h4>
                 </div>
                 <!--File settings collapsible-->
-                <div id="settings-{{file.id}}" class="my-panel-content panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{file.id}}">
+                <div id="settings-{{file.id}}" class="margin my-panel-content panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{file.id}}">
                     <div class="panel-body">
                         <div ng-show="file.settings.type != 'pdf'">
                             <input type="checkbox" id="settings-{{file.id}}-page-break" ng-model="file.settings.pageBreak">Start on a new page
@@ -29,7 +29,5 @@
 <br><br>
 
 <div>
-    <div class="btn btn-info" ng-click="generatePDF()" >Generate PDF</div><br><br>
-
     <!--<embed src="../../../../Image.pdf" width="800px" height="1100px" />-->
 </div>

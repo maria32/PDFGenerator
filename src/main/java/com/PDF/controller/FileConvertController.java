@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -30,6 +31,7 @@ public class FileConvertController {
     public boolean deleteFile(@PathVariable("name") String name,
                               @PathVariable("extension") String extension) {
         System.out.println("deleting " + name + "." + extension);
+
         return storageService.deleteFile(name, extension);
     }
 

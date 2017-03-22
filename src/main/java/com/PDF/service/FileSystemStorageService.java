@@ -11,6 +11,7 @@ import com.PDF.model.settings.SettingsPDF;
 import com.itextpdf.text.*;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.*;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -20,6 +21,7 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -154,6 +156,7 @@ public class FileSystemStorageService implements StorageService{
                 myFiles.add(new MyFile(file));
                 filesInMyFiles.add(file);
             }
+
         }
 
         return myFiles;
@@ -172,6 +175,7 @@ public class FileSystemStorageService implements StorageService{
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    break;
                 }
             }
         }
@@ -237,14 +241,20 @@ public class FileSystemStorageService implements StorageService{
                 pdfFile.delete();
                 pdfFile.createNewFile();
             }
-            PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
-        //pdf settings: password, watermark
+            PdfWriter pdfWriter = null;
+            try {
+                pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
+            }catch (FileNotFoundException fnfe){
+                System.out.println("Fisier in uz");
+            }
+            //pdf settings: password, watermark
             PDFSettings settingsPDF = pdfSettingsService.getPDFSettings();
             if(settingsPDF.getPassword() != null && !settingsPDF.getPassword().equals("")){
                 String owner = "Magda";
-                pdfWriter.setEncryption(settingsPDF.getPassword().getBytes(), owner.getBytes(), PdfWriter.ALLOW_PRINTING, PdfWriter.ENCRYPTION_AES_128);
+                pdfWriter.setEncryption(settingsPDF.getPassword().getBytes(), owner.getBytes(), 0, PdfWriter.ENCRYPTION_AES_128);
             }
-            if(settingsPDF.getWatermarkPic() != null){
+            if((settingsPDF.getImageWatermark() != null && settingsPDF.getImageWatermark().getWatermark() != null) ||
+                    (settingsPDF.getTextWatermark() != null && settingsPDF.getTextWatermark().getWatermark() != null)){
                 PDFWatermark pdfWatermark = new PDFWatermark();
                 pdfWatermark.setPdfSettings(settingsPDF);
                 pdfWriter.setPageEvent(pdfWatermark);
@@ -254,10 +264,14 @@ public class FileSystemStorageService implements StorageService{
             document.open();
             document.setMargins(30, 30, 45, 30);
             FontFactory.defaultEmbedding = true;
+            //for PDF instances
+            List<PdfReader> reader = new ArrayList<>();
+
             for(MyFile myFile : myFiles){
                 if(myFile.getSettings().isPageBreak()){
                     document.newPage();
                 }
+                System.out.println(myFile.getName());
                 switch(myFile.getSettings().getType()){
                     case "image" :
                         Image image = Image.getInstance(myFile.getFile().getPath());
@@ -298,16 +312,16 @@ public class FileSystemStorageService implements StorageService{
                         Rectangle originalPageSize = pdfWriter.getPageSize();
                         document.newPage();
                         PdfContentByte cb = pdfWriter.getDirectContent();
-                        PdfReader reader = new PdfReader(myFile.getFile().getAbsolutePath());
+                        reader.add(new PdfReader(myFile.getFile().getAbsolutePath()));
                         SettingsPDF pdfSettings = (SettingsPDF) myFile.getSettings();
                         if(!pdfSettings.getPagesIncluded().equals("All")){
-                            reader.selectPages(pdfSettings.getPagesIncluded());
+                            reader.get(reader.size()-1).selectPages(pdfSettings.getPagesIncluded());
                         }
-                        for(int i = 1; i <= reader.getNumberOfPages(); i++) {
-                            Rectangle pageSize = reader.getPageSize(i);
+                        for(int i = 1; i <= reader.get(reader.size()-1).getNumberOfPages(); i++) {
+                            Rectangle pageSize = reader.get(reader.size()-1).getPageSize(i);
                             document.setPageSize(pageSize);
                             document.newPage();
-                            PdfImportedPage page = pdfWriter.getImportedPage(reader, i);
+                            PdfImportedPage page = pdfWriter.getImportedPage(reader.get(reader.size()-1), i);
                             cb.addTemplate(page, 0, 0);
                         }
                         document.setPageSize(originalPageSize);
@@ -316,7 +330,11 @@ public class FileSystemStorageService implements StorageService{
                 }
 
             }
+
             document.close();
+            for (PdfReader readerItem : reader){
+                readerItem.close();
+            }
             //opening the file in default application (Acrobat Reader)
             Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + pdfFile);
         } catch (Exception e) {
