@@ -20,7 +20,9 @@ public class MyFile<S extends Settings> {
 
     private static final AtomicInteger count = new AtomicInteger(0);
     public static final List<String> image = Arrays.asList("jpg", "png", "bmp");
-    public static final List<String> document = Arrays.asList("doc", "docx");
+    public static final List<String> word = Arrays.asList("doc", "docx", "odt", "rtf");
+    public static final List<String> excel = Arrays.asList("xls", "xlsx");
+    public static final List<String> powerPoint = Arrays.asList("ppt", "pptx");
     public static final List<String> text = Arrays.asList("txt", "rtf");
     public static final List<String> pdf = Arrays.asList("pdf");
 
@@ -43,10 +45,14 @@ public class MyFile<S extends Settings> {
         Settings settings;
         if(image.contains(extension)){
             settings = new SettingsImage();
-        } else if(document.contains(extension)) {
-            settings = new SettingsDocument();
         }else if(text.contains(extension)){
             settings = new SettingsText();
+        } else if(word.contains(extension)) {
+            settings = new SettingsWord();
+        } else if(excel.contains(extension)) {
+            settings = new SettingsExcel();
+        } else if(powerPoint.contains(extension)) {
+            settings = new SettingsPowerPoint();
         }else if(pdf.contains(extension)){
             try {
                 PdfReader reader = new PdfReader(getFile().getAbsolutePath());

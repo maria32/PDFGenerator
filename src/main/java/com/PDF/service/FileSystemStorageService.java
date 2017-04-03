@@ -11,6 +11,8 @@ import com.PDF.model.settings.SettingsPDF;
 import com.itextpdf.text.*;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.*;
+import com.sevenpdf.service.PDFService;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,19 +40,19 @@ import java.util.stream.Stream;
 public class FileSystemStorageService implements StorageService{
 
     private final Path rootLocation;
-
     private static List<MyFile> myFiles;
+    private static int generationProgressBar = 0;
 
     @Autowired
     private PDFSettingsService pdfSettingsService;
 
-    static{
-        myFiles = new ArrayList<>();
-    }
-
     @Autowired
     @Value("${upload.directory}")
     public String uploadPath;
+
+    static{
+        myFiles = new ArrayList<>();
+    }
 
     public String getUploadPath() {
         return uploadPath;
@@ -61,6 +60,10 @@ public class FileSystemStorageService implements StorageService{
 
     public void setUploadPath(String uploadPath) {
         this.uploadPath = uploadPath;
+    }
+
+    public int getGenerationProgressBar() {
+        return generationProgressBar;
     }
 
     @Autowired
@@ -196,6 +199,15 @@ public class FileSystemStorageService implements StorageService{
         return uploadDir.exists();
     }
 
+    private File checkTempDirectory(){
+        File tempDir = new File(uploadPath + "temp");
+        if(!tempDir.exists()) {
+            return !tempDir.mkdir() ? null : tempDir;
+        }else{
+            return tempDir;
+        }
+    }
+
     public void updateOrderOfFiles(List<Integer> listOfOrder){
 
         List<MyFile> myFilesNewOrder = new ArrayList<>();
@@ -227,6 +239,7 @@ public class FileSystemStorageService implements StorageService{
     }
 
     public String generatePDF() {
+        generationProgressBar = 0;
         Document document = new Document();
         try {
             File outputDir = new File(uploadPath + "output");
@@ -271,6 +284,9 @@ public class FileSystemStorageService implements StorageService{
                 if(myFile.getSettings().isPageBreak()){
                     document.newPage();
                 }
+                Runtime runtime;
+                Process process;
+                checkTempDirectory();
                 System.out.println(myFile.getName());
                 switch(myFile.getSettings().getType()){
                     case "image" :
@@ -306,40 +322,126 @@ public class FileSystemStorageService implements StorageService{
                         document.add(new Phrase(org.apache.commons.io.FileUtils.readFileToString(myFile.getFile()))); // I used Phrase instead of Paragraph
 
                         break;
-                    case "document" :
+                    case "word" :
+                        StringBuilder processOutput = new StringBuilder();
+                        String wordJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/","") + "scripts/SaveWordAsPDF.js";
+                        runtime = Runtime.getRuntime();
+                        process = runtime.exec("cscript.exe //nologo " + wordJsPath + " " + myFile.getFile().getAbsolutePath());
+                        try (BufferedReader processOutputReader = new BufferedReader(
+                                new InputStreamReader(process.getInputStream()));) {
+                            String outputLine;
+                            while ((outputLine = processOutputReader.readLine()) != null) {
+                                processOutput.append(outputLine).append(System.lineSeparator());
+                            }
+                            process.waitFor();
+                            if (processOutput.indexOf("Done.") != -1){
+                                File word = new File(uploadPath + "temp/" + FilenameUtils.getBaseName(myFile.getName()) + ".pdf");
+                                addPdf(document, pdfWriter, reader, word);
+                            } else{
+                                //eroare conversie
+                            }
+                        }
+                        /*File wordFile = myFile.getFile();
+                        File outputPdfFile = new File(uploadPath + "temp/" + FilenameUtils.getBaseName(myFile.getName()) + ".pdf");
+
+                        PDFService MySevenPDFServiceObject = new PDFService("http://localhost:8080", "sevenpdf", "sevenpdf");
+                        MySevenPDFServiceObject.Convert(wordFile, outputPdfFile);*/
+
+                        break;
+                    case "excel":
+                        String excelJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/","") + "scripts/SaveExcelAsPDF.js";
+                        runtime = Runtime.getRuntime();
+                        process = runtime.exec("cscript.exe //nologo " + excelJsPath + " " + myFile.getFile().getAbsolutePath());
+                        processOutput = new StringBuilder();
+                        try (BufferedReader processOutputReader = new BufferedReader(
+                                new InputStreamReader(process.getInputStream()));) {
+                            String outputLine;
+                            while ((outputLine = processOutputReader.readLine()) != null) {
+                                processOutput.append(outputLine).append(System.lineSeparator());
+                            }
+                            process.waitFor();
+                            if (processOutput.indexOf("Done.") != -1){
+                                File excel = new File(uploadPath + "temp/" + FilenameUtils.getBaseName(myFile.getName()) + ".pdf");
+                                addPdf(document, pdfWriter, reader, excel);
+                            } else{
+                                //eroare conversie
+                            }
+                        }
+                        break;
+                    case "powerPoint":
+                        String pptJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/","") + "scripts/SavePowerPointAsPDF.js";
+                        runtime = Runtime.getRuntime();
+                        process = runtime.exec("cscript.exe //nologo " + pptJsPath + " " + myFile.getFile().getAbsolutePath());
+                        processOutput = new StringBuilder();
+                        try (BufferedReader processOutputReader = new BufferedReader(
+                                new InputStreamReader(process.getInputStream()));) {
+                            String outputLine;
+                            while ((outputLine = processOutputReader.readLine()) != null) {
+                                processOutput.append(outputLine).append(System.lineSeparator());
+                            }
+                            process.waitFor();
+                            if (processOutput.indexOf("Done.") != -1){
+                                File ppt = new File(uploadPath + "temp/" + FilenameUtils.getBaseName(myFile.getName()) + ".pdf");
+                                addPdf(document, pdfWriter, reader, ppt);
+                            } else{
+                                //eroare conversie
+                            }
+                        }
+
                         break;
                     case "pdf" :
-                        Rectangle originalPageSize = pdfWriter.getPageSize();
-                        document.newPage();
-                        PdfContentByte cb = pdfWriter.getDirectContent();
-                        reader.add(new PdfReader(myFile.getFile().getAbsolutePath()));
-                        SettingsPDF pdfSettings = (SettingsPDF) myFile.getSettings();
-                        if(!pdfSettings.getPagesIncluded().equals("All")){
-                            reader.get(reader.size()-1).selectPages(pdfSettings.getPagesIncluded());
-                        }
-                        for(int i = 1; i <= reader.get(reader.size()-1).getNumberOfPages(); i++) {
-                            Rectangle pageSize = reader.get(reader.size()-1).getPageSize(i);
-                            document.setPageSize(pageSize);
-                            document.newPage();
-                            PdfImportedPage page = pdfWriter.getImportedPage(reader.get(reader.size()-1), i);
-                            cb.addTemplate(page, 0, 0);
-                        }
-                        document.setPageSize(originalPageSize);
-                        document.newPage();
+                        addPdf(document, pdfWriter, reader, myFile);
                         break;
                 }
-
+                generationProgressBar++;
             }
 
             document.close();
             for (PdfReader readerItem : reader){
                 readerItem.close();
             }
-            //opening the file in default application (Acrobat Reader)
+            //opening the file in default application (Acrobat Reader if installed)
             Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + pdfFile);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        //generationProgressBar = 0;
         return "ok";
+    }
+
+    private void addPdf(Document document, PdfWriter pdfWriter, List<PdfReader> reader, MyFile myFile) throws IOException {
+        Rectangle originalPageSize = pdfWriter.getPageSize();
+        document.newPage();
+        PdfContentByte cb = pdfWriter.getDirectContent();
+        reader.add(new PdfReader(myFile.getFile().getAbsolutePath()));
+        SettingsPDF pdfSettings = (SettingsPDF) myFile.getSettings();
+        if(!pdfSettings.getPagesIncluded().equals("All")){
+            reader.get(reader.size()-1).selectPages(pdfSettings.getPagesIncluded());
+        }
+        for(int i = 1; i <= reader.get(reader.size()-1).getNumberOfPages(); i++) {
+            Rectangle pageSize = reader.get(reader.size()-1).getPageSize(i);
+            document.setPageSize(pageSize);
+            document.newPage();
+            PdfImportedPage page = pdfWriter.getImportedPage(reader.get(reader.size()-1), i);
+            cb.addTemplate(page, 0, 0);
+        }
+        document.setPageSize(originalPageSize);
+        document.newPage();
+    }
+
+    private void addPdf(Document document, PdfWriter pdfWriter, List<PdfReader> reader, File file) throws IOException {
+        Rectangle originalPageSize = pdfWriter.getPageSize();
+        document.newPage();
+        PdfContentByte cb = pdfWriter.getDirectContent();
+        reader.add(new PdfReader(file.getAbsolutePath()));
+        for(int i = 1; i <= reader.get(reader.size()-1).getNumberOfPages(); i++) {
+            Rectangle pageSize = reader.get(reader.size()-1).getPageSize(i);
+            document.setPageSize(pageSize);
+            document.newPage();
+            PdfImportedPage page = pdfWriter.getImportedPage(reader.get(reader.size()-1), i);
+            cb.addTemplate(page, 0, 0);
+        }
+        document.setPageSize(originalPageSize);
+        document.newPage();
     }
 }

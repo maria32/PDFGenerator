@@ -38,5 +38,7 @@ public interface StorageService {
 
     String generatePDF();
 
+    int getGenerationProgressBar();
+
 
 }

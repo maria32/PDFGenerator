@@ -5,15 +5,15 @@ import com.PDF.model.Settings;
 /**
  * Created by martanase on 1/26/2017.
  */
-public class SettingsDocument extends Settings {
+public class SettingsWord extends Settings {
 
     private String pagesToBind;
     private String pageSizing;
     private String orientation;
     private int fontSize;
 
-    public SettingsDocument() {
-        super.setType("document");
+    public SettingsWord() {
+        super.setType("word");
         this.pagesToBind = "All";
         this.pageSizing = "Fit";
     }

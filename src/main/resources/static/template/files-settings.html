@@ -6,7 +6,7 @@
                     <h4 class="files panel-title">
                         <span class="index badge">{{$index + 1}} </span>
                         <a role="button" data-toggle="collapse" data-parent="#uploaded" data-target="#settings-{{file.id}}" aria-expanded="true" style="cursor: default;">
-                            {{file.name}}.{{file.extension}} <span ng-show="file.settings.type == null">(unknown)</span>
+                            {{file.name}}.{{file.extension}} <span class="red-font" ng-show="file.settings.type == null">(unknown)</span>
                         </a>
                         <a style="cursor: default;"><i extension="button" class="glyphicon glyphicon-remove" ng-click="deleteFile(file, $index)"></i></a>
                     </h4>
@@ -27,7 +27,3 @@
         </div>
     </ul>
 <br><br>
-
-<div>
-    <!--<embed src="../../../../Image.pdf" width="800px" height="1100px" />-->
-</div>

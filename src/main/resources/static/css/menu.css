@@ -429,3 +429,14 @@ a {
 .scale-addon {
     width: 30px !important;
 }
+
+.red-font {
+    color: #FF5050;
+}
+
+#pdf-generation-progress-circle {
+    position: relative;
+    width: 90px;
+    height: 90px;
+
+}

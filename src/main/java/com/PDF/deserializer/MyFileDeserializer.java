@@ -67,12 +67,18 @@ public class MyFileDeserializer extends StdDeserializer<MyFile>{
                 System.out.println("y= " + positionAbsolute.getY());
             }
             settings = new SettingsImage(scale, alignment, rotationDegrees, positionAbsolute);
-        } else if(document.contains(extension)) {
-            //fields to be added
-            settings = new SettingsDocument();
         }else if(text.contains(extension)) {
             //fields to be added
             settings = new SettingsText();
+        } else if(word.contains(extension)) {
+            //fields to be added
+            settings = new SettingsWord();
+        } else if(excel.contains(extension)) {
+            //fields to be added
+            settings = new SettingsExcel();
+        } else if(powerPoint.contains(extension)) {
+            //fields to be added
+            settings = new SettingsPowerPoint();
         }else if(pdf.contains(extension)){
             int pages = settingsNode.get("pages").asInt();
             String pagesIncluded = settingsNode.get("pagesIncluded").asText();

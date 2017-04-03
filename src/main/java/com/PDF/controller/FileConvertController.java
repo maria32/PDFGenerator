@@ -41,4 +41,12 @@ public class FileConvertController {
         return storageService.generatePDF();
     }
 
+    @RequestMapping(value="/generatePDF/progress-bar", method = RequestMethod.GET)
+    @ResponseBody
+    public int progressBar() {
+        return storageService.getGenerationProgressBar();
+    }
+
+
+
 }

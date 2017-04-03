@@ -18,8 +18,8 @@ angular.module('PDF')
                 }
             });
 
-        $scope.alignmentOptions = [];
-        $http({
+        $scope.alignmentOptions = ["LEFT", "MIDDLE", "RIGHT", "TEXTWRAP", "UNDERLYING"];
+/*        $http({
             method: 'GET',
             url: '/update/settings/image-alignment-options/'
         }).then(function successCallback(response) {
@@ -29,7 +29,7 @@ angular.module('PDF')
             } else {
                 console.log("Image Alignment options GET error");
             }
-        });
+        });*/
 
         $scope.deleteFile = function (file, index) {
             Upload.upload({

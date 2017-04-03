@@ -18,6 +18,7 @@
 
 
     <script src="library/jquery/dist/jquery.min.js"></script>
+    <script src="library/jquery/circle-progress.min.js"></script>
     <script src="library/angular-ui-sortable/jquery-ui.min.js"></script> <!-- for change of order of files -->
     <script src="library/angular/angular.min.js"></script>
     <script src="library/angular-file-upload/dist/angular-file-upload.min.js"></script>
@@ -68,6 +69,14 @@
 
     <div>
         <hr>
+        <div ng-show="showProgressCircle == true">
+            <canvas id="pdf-generation-progress-circle" width="260" height="260"></canvas>
+        </div>
+        <div class="pdf-generation-progress-circle" data-animate="false">
+            <div class="circle" data-percent="75.3">
+                <div></div>
+            </div>
+        </div>
         <!--Content-->
         <div class="content" ng-view>Test care nu trebuie sa se vada</div>
         <script src="js/PDF.js"></script>
@@ -86,5 +95,9 @@
             </div>
         </div>-->
 </div>
+
+<!--<div>
+    <embed src="C:\Users\martanase\Desktop\upload\output\GeneratedPDF.pdf" width="800px" height="1100px" />
+</div>-->
 </body>
 </html>
