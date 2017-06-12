@@ -1,10 +1,10 @@
-package com.PDF.service;
+package com.PDF.service.impl;
 
 import com.PDF.exception.StorageException;
-import com.PDF.model.MyFile;
 import com.PDF.model.PDFSettings;
-import com.PDF.model.settings.WatermarkSettings;
 import com.PDF.model.watermark.ImageWatermark;
+import com.PDF.service.PDFSettingsService;
+import com.PDF.service.UserSessionService;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.logging.Level;
@@ -28,8 +29,11 @@ public class PDFSettingsServiceImpl implements PDFSettingsService {
     private static PDFSettings pdfSettings;
 
     @Autowired
-    @Value("${pdfSettings.directory}")
+    @Value("${workspace.directory}")
     private String watermarkDirPath;
+
+    @Autowired
+    private UserSessionService userSessionService;
 
     private static Logger logger = Logger.getLogger(PDFSettingsServiceImpl.class.getName());
 
@@ -37,8 +41,12 @@ public class PDFSettingsServiceImpl implements PDFSettingsService {
         logger.setLevel(Level.FINE);
     }
 
+    private String getWatermarkDirPath(){
+        return watermarkDirPath + "upload" + userSessionService.getUsername() + "/watermark/";
+    }
+
     private void existsWatermarkDir() {
-        File watermarkDir = new File(watermarkDirPath);
+        File watermarkDir = new File(getWatermarkDirPath());
         if (!watermarkDir.exists()) {
             watermarkDir.mkdir();
             logger.log(Level.INFO, "Created watermark directory");
@@ -53,9 +61,9 @@ public class PDFSettingsServiceImpl implements PDFSettingsService {
             if (multipartFile.isEmpty()) {
                 throw new StorageException("Failed to store empty file " + multipartFile.getOriginalFilename());
             }
-            FileUtils.cleanDirectory(new File(watermarkDirPath));
-            Files.copy(multipartFile.getInputStream(), Paths.get(watermarkDirPath).resolve(multipartFile.getOriginalFilename()), StandardCopyOption.REPLACE_EXISTING);
-            file = new File(watermarkDirPath + multipartFile.getOriginalFilename());
+            FileUtils.cleanDirectory(new File(getWatermarkDirPath()));
+            Files.copy(multipartFile.getInputStream(), Paths.get(getWatermarkDirPath()).resolve(multipartFile.getOriginalFilename()), StandardCopyOption.REPLACE_EXISTING);
+            file = new File(getWatermarkDirPath() + multipartFile.getOriginalFilename());
 
         } catch (IOException e) {
             throw new StorageException("Failed to store file " + multipartFile.getOriginalFilename(), e);
@@ -79,7 +87,7 @@ public class PDFSettingsServiceImpl implements PDFSettingsService {
     public void deleteWatermark() {
         existsWatermarkDir();
         try {
-            FileUtils.cleanDirectory(new File(watermarkDirPath));
+            FileUtils.cleanDirectory(new File(getWatermarkDirPath()));
             //pdfSettings.setWatermarkPic(null);
             logger.log(Level.INFO, "Deleted watermark");
         }catch (IOException e){

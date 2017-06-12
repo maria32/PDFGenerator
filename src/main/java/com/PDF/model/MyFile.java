@@ -44,7 +44,7 @@ public class MyFile<S extends Settings> {
         //set "settings" type based on extension
         Settings settings;
         if(image.contains(extension)){
-            settings = new SettingsImage();
+            settings = new SettingsImage(file);
         }else if(text.contains(extension)){
             settings = new SettingsText();
         } else if(word.contains(extension)) {

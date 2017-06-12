@@ -1,5 +1,9 @@
 angular.module('PDF')
-    .controller('FilesSettingsCtrl', function ($rootScope, $scope, $http, Upload, $sce) {
+    .controller('FilesSettingsCtrl', function ($rootScope, $scope, $sessionStorage, $http, Upload, $location, NotificationService) {
+
+        if($sessionStorage.user == undefined){
+            $location.path("/login");
+        }
 
         $scope.files = [];
         $scope.alignmentSelected=[];
@@ -12,9 +16,10 @@ angular.module('PDF')
                 if (response.data != "") {
                     $scope.files = response.data;
                     $rootScope.filesNo = $scope.files.length;
+                    $sessionStorage.filesNo = $rootScope.filesNo;
                     // $("doc-pages-to-bind-1").val($scope.files[0].settings.pagesToBind);
                 } else {
-                    console.log("No Files or files not retrieved correctly");
+                    NotificationService.error("No Files or files not retrieved correctly");
                 }
             });
 
@@ -41,7 +46,7 @@ angular.module('PDF')
                     $scope.files.splice(index, 1);
                     $rootScope.filesNo = $scope.files.length;
                 }else{
-                    console.log('DELETE ERROR');
+                    NotificationService.error('Failed to delete' + file.name + '.' + file.extension);
                 }
             });
         };
@@ -65,10 +70,10 @@ angular.module('PDF')
                     url: '/update/order-of-files',
                     data: JSON.stringify(listOfOrder),
                     success: function(result){
-                        console.log("updatedOrderOfFiles");
+                        NotificationService.info("Updated order of files");
                     },
                     error: function(e) {
-                        console.log(e);
+                        NotificationService.error('Error updating order of files: ' + e);
                     }});
             }
         };
@@ -92,7 +97,7 @@ angular.module('PDF')
                 url: '/update/settings',
                 data: JSON.stringify($scope.files),
                 success: function(result){
-                    console.log("updatedSettingsOfFiles");
+                    NotificationService.success("Saved changes.");
                 },
                 error: function(e) {
                     console.log(e);

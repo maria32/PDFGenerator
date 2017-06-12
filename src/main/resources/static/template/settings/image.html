@@ -1,5 +1,5 @@
 
-    <div style="display: flex;">
+<!--    <div style="display: flex;">
         <span>Scale</span>
         <select class="input-group-sm col-sm-2" ng-model="file.settings.size">
             <option value="original">Original size</option>
@@ -7,42 +7,96 @@
             <option value="custom">Custom</option>
         </select>
     </div><br>
-    <br>
-    <div style="display: flex;">
-        Rotate <input type="text" ng-model="file.settings.rotationDegrees" class="input-group-sm col-sm-2">
-    </div><br>
+    <br>-->
 
     <div>
-        Position: <br>
-        <input type="radio" name="position" value="alignment" ng-model="position">Alignment <button ng-enabled="position == 'alignment'"><span class="glyphicon glyphicon glyphicon-pencil" ng-click="showDetails = ! showDetails"></span></button><span ng-show="position == 'alignment'">{{file.settings.alignment}}</span><br>
-            <select class="selectpicker" ng-model="file.settings.alignment" ng-options="option for option in alignmentOptions" multiple ng-show="showDetails"></select><br>
-        <input type="radio" name="position" value="absolute" ng-model="position"> Absolute position
-            <div>
-                x <input type="number" ng-model="file.settings.absolutePosition.x">
-                y <input type="number" ng-model="file.settings.absolutePosition.y">
+        <ul class="nav nav-pills">
+            <li class="nav-item active">
+                <a class="my-blue-nav-item" data-target="#image-settings-position"
+                   data-toggle="tab">Position</a>
+            </li>
+            <li class="nav-item">
+                <a class="my-blue-nav-item" data-target="#image-settings-scale"
+                    data-toggle="tab">Scale</a>
+            </li>
+            <li class="nav-item">
+                <a class="my-blue-nav-item" data-target="#image-settings-rotate"
+                    data-toggle="tab">Rotate</a>
+            </li>
+        </ul>
+        <div class="tab-content left-blue-contour">
+            <div class="tab-pane active" id="image-settings-position">
+                <div class="bottom-blue-border">
+                    <b>Wrapping style</b>
+                    <br><br>
+                    <select ng-options="p for p in positionsWithinText"
+                            ng-model="file.settings.wrappingStyle">
+                    </select><br>
+                </div>
+                <b>Position</b>
+                <br><br>
+                <input type="radio" name="position" ng-model="file.settings.absolutePosition" data-ng-value="false">Set position from ...<br>
+                <!--<select ng-show="pos == 'predefined'" class="image-picker show-html" ng-model="pdfSettings.imageWatermark.positionPredefined">
+                    <option data-img-src="../database/small/TOP_LEFT.png" data-img-class="first" data-img-alt="Page 1" value="TOP_LEFT">Top left</option>
+                    <option data-img-src="../database/small/TOP_CENTER.png" data-img-alt="Page 2" value="TOP_CENTER">Top center</option>
+                    <option data-img-src="../database/small/TOP_RIGHT.png" data-img-alt="Page 2" value="TOP_RIGHT">Top right</option><br><br>
+                    <option data-img-src="../database/small/MIDDLE_LEFT.png" data-img-alt="Page 2" value="MIDDLE_LEFT">Middle left</option>
+                    <option data-img-src="../database/small/CENTER.png" data-img-alt="Page 2" value="CENTER">Middle Center</option>
+                    <option data-img-src="../database/small/MIDDLE_RIGHT.png" data-img-alt="Page 9" value="MIDDLE_RIGHT">Middle right</option><br>
+                    <option data-img-src="../database/small/BOTTOM_LEFT.png" data-img-alt="Page 10" value="BOTTOM_LEFT">Bottom left</option>
+                    <option data-img-src="../database/small/BOTTOM_CENTER.png" data-img-alt="Page 11" value="BOTTOM_CENTER">Bottom center</option>
+                    <option data-img-src="../database/small/BOTTOM_RIGHT.png" data-img-alt="Page 12" data-img-class="last" value="BOTTOM_RIGHT">Bottom right</option>
+                </select>-->
+                <div class="margin-bottom margin-top" ng-show="file.settings.absolutePosition == false">
+                    <select ng-options="p for p in positions"
+                            ng-model="file.settings.positionPredefined">
+                    </select><br>
+                </div>
+
+                <input type="radio" name="position" ng-model="file.settings.absolutePosition" data-ng-value="true">Set absolute position
+                <div id="position-absolute-inputs-blue" ng-show="file.settings.absolutePosition == true">
+                    <div class="my-blue-left-border">
+                        <a class="btn btn-sm btn-link" data-toggle="collapse" data-target="#sizes-info">Sizes info</a>
+                        <div class="collapse" id="sizes-info">
+                            <div class="my-card-box light-blue">
+                                <b>A4 page</b> size: 595x842 px <br>(Your page may not be A4)
+                                <br>
+                                <b>{{file.settings.fileName}}</b> size: {{file.settings.width}}x{{file.settings.height}} px
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group margin-bottom">
+                        <span class="input-group-addon">x</span>
+                        <input class="form-control my-input-sm" type="number" ng-model="file.settings.positionAbsolute.x">
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">y</span>
+                        <input class=" my-input-sm form-control" type="number" ng-model="file.settings.positionAbsolute.y">
+                    </div>
+                    <div>
+                        <span class="text-primary">x = 0 means left of page.<br> y = 0 means bottom of page</span>
+                    </div>
+                </div>
             </div>
-    </div><br>
 
-    Resize by
-    <div class="radio-inline active" data-toggle="collapse" data-target="#resize-percentage">
-        <input type="radio" name="resize">percentage
-    </div>
-    <div class="radio-inline" data-toggle="collapse" data-target="#resize-pixels">
-        <input type="radio" name="resize">pixels
-    </div><br>
-
-    <div class="collapse col-sm-10" id="resize-percentage">
-        <div class="controls-pane row">
-            <div class="col-sm-5">
-                <label class="col-sm-6" for="horizontal">Horizontal:</label>
-                <input class="col-sm-4" extension="text" id="horizontal" value="100"/>
-                <span class="input-group-addon col-sm-1">%</span>
+            <!--Scale-->
+            <div class="tab-pane margin-left" id="image-settings-scale">
+                <input type="checkbox" ng-model="file.settings.fitToPage" value="true">Fit to page
+                <input class="my-slider" type="range" name="scale" min="1" max="300" value="100"
+                       ng-model="file.settings.scale">
+                <div class="input-group scale-40 margin-top margin-bottom">
+                    <input class="my-input-sm form-control" type="number" ng-model="file.settings.scale">
+                    <span class="input-group-addon scale-addon">%</span>
+                </div>
             </div>
-
-            <div class="col-sm-5">
-                <label class="col-sm-6" for="vertical">Vertical:</label>
-                <input class="col-sm-4" extension="text" id="vertical" value="100"/>
-                <span class="input-group-addon col-sm-1">%</span>
+            <!--Rotate-->
+            <div class="tab-pane margin-left" id="image-settings-rotate">
+                Rotate:
+                <input class="my-input-sm form-control inline margin-bottom" type="number" min="0" max="360" ng-model="file.settings.rotationDegrees">
+                <div>
+                    <span class="text-primary">minim = 0, maxim = 360</span>
+                </div>
             </div>
         </div>
     </div>

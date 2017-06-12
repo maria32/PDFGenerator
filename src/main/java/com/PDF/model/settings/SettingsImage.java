@@ -3,7 +3,12 @@ package com.PDF.model.settings;
 
 import com.PDF.model.Settings;
 import com.PDF.model.settings.image.PositionAbsolute;
+import com.PDF.utils.Position;
+import com.itextpdf.text.BadElementException;
+import com.itextpdf.text.Image;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,36 +18,104 @@ import java.util.List;
 public class SettingsImage extends Settings {
 
     public enum ImageAlignment{
-        LEFT(0), MIDDLE(1), RIGHT(2), TEXTWRAP(4), UNDERLYING(8);
+        None(0), Textwrap(4), Underlying(8);
         private int value;
-        private ImageAlignment(int value){
+        ImageAlignment(int value){
             this.value = value;
         }
         public int getValue(){ return value;}
     }
-    private String scale = "original"; //original, fit, custom
-    private int rotationDegrees;
-    private List<ImageAlignment> alignment = Arrays.asList(ImageAlignment.LEFT);
+
+
+    private float width;
+    private float height;
+    private ImageAlignment wrappingStyle = ImageAlignment.None;
+    private boolean absolutePosition = false;
+    private Position positionPredefined = Position.CENTER;
     private PositionAbsolute positionAbsolute;
+    private int rotationDegrees = 0;
+    private int scale = 100;
+//    private float opacity = 1f;
 
     public SettingsImage() {
         super.setType("image");
     }
 
-    public SettingsImage(String scale, List<ImageAlignment> alignment, int rotationDegrees, PositionAbsolute positionAbsolute) {
+    public SettingsImage(File file) {
         super.setType("image");
-        this.scale = scale;
-        this.alignment = alignment;
-        this.rotationDegrees = rotationDegrees;
+        if (file != null){
+            Image image;
+            try {
+                image = Image.getInstance(file.getPath());
+                this.width = image.getWidth();
+                this.height = image.getHeight();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }catch (BadElementException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public SettingsImage(File file, ImageAlignment wrappingStyle, boolean absolutePosition, Position positionPredefined, PositionAbsolute positionAbsolute, int rotationDegrees, int scale) {
+        this(file);
+        super.setType("image");
+        this.wrappingStyle = wrappingStyle;
+        this.absolutePosition = absolutePosition;
+        this.positionPredefined = positionPredefined;
         this.positionAbsolute = positionAbsolute;
-    }
-
-    public String getScale() {
-        return scale;
-    }
-
-    public void setScale(String scale) {
+        this.rotationDegrees = rotationDegrees;
         this.scale = scale;
+//        this.opacity = opacity;
+
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
+    public void setWidth(float width) {
+        this.width = width;
+    }
+
+    public float getHeight() {
+        return height;
+    }
+
+    public void setHeight(float height) {
+        this.height = height;
+    }
+
+    public ImageAlignment getWrappingStyle() {
+        return wrappingStyle;
+    }
+
+    public void setWrappingStyle(ImageAlignment wrappingStyle) {
+        this.wrappingStyle = wrappingStyle;
+    }
+
+    public boolean isAbsolutePosition() {
+        return absolutePosition;
+    }
+
+    public void setAbsolutePosition(boolean absolutePosition) {
+        this.absolutePosition = absolutePosition;
+    }
+
+    public Position getPositionPredefined() {
+        return positionPredefined;
+    }
+
+    public void setPositionPredefined(Position positionPredefined) {
+        this.positionPredefined = positionPredefined;
+    }
+
+    public PositionAbsolute getPositionAbsolute() {
+        return positionAbsolute;
+    }
+
+    public void setPositionAbsolute(PositionAbsolute positionAbsolute) {
+        this.positionAbsolute = positionAbsolute;
     }
 
     public int getRotationDegrees() {
@@ -53,19 +126,19 @@ public class SettingsImage extends Settings {
         this.rotationDegrees = rotationDegrees;
     }
 
-    public List<ImageAlignment> getAlignment() {
-        return alignment;
+    public int getScale() {
+        return scale;
     }
 
-    public void setAlignment(List<ImageAlignment> alignment) {
-        this.alignment = alignment;
+    public void setScale(int scale) {
+        this.scale = scale;
     }
 
-    public PositionAbsolute getPositionAbsolute() {
-        return positionAbsolute;
-    }
+//    public float getOpacity() {
+//        return opacity;
+//    }
 
-    public void setPositionAbsolute(PositionAbsolute positionAbsolute) {
-        this.positionAbsolute = positionAbsolute;
-    }
+//    public void setOpacity(float opacity) {
+//        this.opacity = opacity;
+//    }
 }

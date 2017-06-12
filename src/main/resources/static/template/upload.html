@@ -1,12 +1,26 @@
-<link href="../library/upload.css" rel="stylesheet"/>
-
-<div ng-app="PDF" ng-controller="UploadCtrl" class="my-content-container">
+<div class="my-content-container">
     <p class="popover-title my-title">Upload files</p>
+    <br>
+    <div>
+        <span class="text-primary">Nice to know:
+        <br>
+         <ul class="indent">
+             <li>Maximum size per file is 5MB.</li>
+             <li>To add multiple files, press the Ctrl-key.</li>
+             <li><a href="#!/extensions"><span class="badge">more</span></a></li>
+        </ul>
+        </span>
+    </div>
+
     <br>
     <div ngf-drop ngf-select ng-model="files" class="my-drop-box-upload"
          ngf-drag-over-class="'dragover-upload'" ngf-multiple="true" ngf-allow-dir="true"
          accept="image/*,application/pdf,text/plain,application/rtf,application/x-rtf,text/richtext,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.slideshow,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-         ngf-pattern="'image/*,application/pdf,text/plain,application/rtf,text/richtext,application/x-rtf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.slideshow,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel'"><p class="arrow"></p><br>Drop or click to upload</div>
+         ngf-pattern="'image/*,application/pdf,text/plain,application/rtf,text/richtext,application/x-rtf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.slideshow,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel'">
+        <p class="arrow"></p>
+        <br>
+        Drop or click to upload
+    </div>
     <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
     Files:
     <ul>

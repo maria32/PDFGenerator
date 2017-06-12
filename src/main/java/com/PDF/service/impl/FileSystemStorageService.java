@@ -1,4 +1,4 @@
-package com.PDF.service;
+package com.PDF.service.impl;
 
 import com.PDF.exception.StorageException;
 import com.PDF.exception.StorageFileNotFoundException;
@@ -8,12 +8,14 @@ import com.PDF.model.PDFWatermark;
 import com.PDF.model.StorageProperties;
 import com.PDF.model.settings.SettingsImage;
 import com.PDF.model.settings.SettingsPDF;
+import com.PDF.model.watermark.ImageWatermark;
+import com.PDF.service.PDFSettingsService;
+import com.PDF.service.StorageService;
+import com.PDF.service.UserSessionService;
 import com.itextpdf.text.*;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.*;
-import com.sevenpdf.service.PDFService;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -23,6 +25,7 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,6 +33,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 
@@ -37,7 +42,9 @@ import java.util.stream.Stream;
  * Created by martanase on 12/9/2016.
  */
 @Service
-public class FileSystemStorageService implements StorageService{
+public class FileSystemStorageService implements StorageService {
+
+    private static final Logger LOGGER = Logger.getLogger(FileSystemStorageService.class.getName());
 
     private final Path rootLocation;
     private static List<MyFile> myFiles;
@@ -47,19 +54,23 @@ public class FileSystemStorageService implements StorageService{
     private PDFSettingsService pdfSettingsService;
 
     @Autowired
-    @Value("${upload.directory}")
-    public String uploadPath;
+    private UserSessionService userSessionService;
+
+    @Autowired
+    @Value("${workspace.directory}")
+    public String workingDirPath;
 
     static{
         myFiles = new ArrayList<>();
     }
 
-    public String getUploadPath() {
-        return uploadPath;
+
+    public String getWorkingDirPath() {
+        return workingDirPath;
     }
 
-    public void setUploadPath(String uploadPath) {
-        this.uploadPath = uploadPath;
+    public void setWorkingDirPath(String workingDirPath) {
+        this.workingDirPath = workingDirPath;
     }
 
     public int getGenerationProgressBar() {
@@ -71,6 +82,14 @@ public class FileSystemStorageService implements StorageService{
         this.rootLocation = Paths.get(properties.getLocation());
     }
 
+    private Path getUserDirPath(){
+        return Paths.get(workingDirPath + "upload" + userSessionService.getUsername() + "/");
+    }
+
+    private String getUserTempDir(){
+        return getUserDirPath() + "/temp/";
+    }
+
     @Override
     public void store(MultipartFile file) {
         System.out.println("I am in store() Service");
@@ -79,7 +98,8 @@ public class FileSystemStorageService implements StorageService{
             if (file.isEmpty()) {
                 throw new StorageException("Failed to store empty file " + file.getOriginalFilename());
             }
-            Files.copy(file.getInputStream(), Paths.get(uploadPath).resolve(file.getOriginalFilename()), StandardCopyOption.REPLACE_EXISTING);
+            Path userDirPath = getUserDirPath();
+            Files.copy(file.getInputStream(), userDirPath.resolve(file.getOriginalFilename()), StandardCopyOption.REPLACE_EXISTING);
 
         } catch (IOException e) {
             throw new StorageException("Failed to store file " + file.getOriginalFilename(), e);
@@ -155,10 +175,13 @@ public class FileSystemStorageService implements StorageService{
         }
 
         for (File file : currentDirectory.listFiles()) {
-            if(!filesInMyFiles.contains(file) && !file.isDirectory()) {
-                myFiles.add(new MyFile(file));
-                filesInMyFiles.add(file);
+            if (!file.isDirectory()) {
+                if (!filesInMyFiles.contains(file)) {
+                    myFiles.add(new MyFile(file));
+                    filesInMyFiles.add(file);
+                }
             }
+
 
         }
 
@@ -186,23 +209,24 @@ public class FileSystemStorageService implements StorageService{
     }
 
     private File checkUploadDirectory(){
-        File uploadDir = new File(uploadPath);
+        //Files.createDirectories(userDirPath);
+        File uploadDir = new File(getUserDirPath().toString());
         if(!uploadDir.exists()) {
-            return !uploadDir.mkdir() ? null : uploadDir;
+            return !uploadDir.mkdirs() ? null : uploadDir;
         }else{
             return uploadDir;
         }
     }
 
     private boolean existsUploadDirectory(){
-        File uploadDir = new File(uploadPath);
+        File uploadDir = new File(getUserDirPath().toString());
         return uploadDir.exists();
     }
 
     private File checkTempDirectory(){
-        File tempDir = new File(uploadPath + "temp");
+        File tempDir = new File(getUserDirPath().toString() + "/temp");
         if(!tempDir.exists()) {
-            return !tempDir.mkdir() ? null : tempDir;
+            return !tempDir.mkdirs() ? null : tempDir;
         }else{
             return tempDir;
         }
@@ -239,15 +263,16 @@ public class FileSystemStorageService implements StorageService{
     }
 
     public String generatePDF() {
+        LOGGER.log(Level.INFO, "PDF merger started");
         generationProgressBar = 0;
         Document document = new Document();
         try {
-            File outputDir = new File(uploadPath + "output");
+            File outputDir = new File(getUserDirPath().toString() + "/output");
             if(!outputDir.exists()){
                 outputDir.mkdir();
             }
 
-            File pdfFile = new File(uploadPath + "output/GeneratedPDF.pdf");
+            File pdfFile = new File(getUserDirPath().toString() + "/output/GeneratedPDF.pdf");
             if(!pdfFile.exists())
                 pdfFile.createNewFile();
             else {
@@ -290,25 +315,10 @@ public class FileSystemStorageService implements StorageService{
                 System.out.println(myFile.getName());
                 switch(myFile.getSettings().getType()){
                     case "image" :
-                        Image image = Image.getInstance(myFile.getFile().getPath());
-                        //scale
-                        SettingsImage imageSettings = (SettingsImage)myFile.getSettings();
-                        if(imageSettings.getScale().equals("fit")){
-                            image.scaleToFit(PageSize.A4.getWidth() - (document.leftMargin() + document.rightMargin()), PageSize.A4.getHeight() - (document.topMargin() + document.bottomMargin()));
-                        }
-                        //absolute position
-                        //image.setAbsolutePosition(imageSettings.getPositionAbsolute().getX(), imageSettings.getPositionAbsolute().getY());
-                        //alignment
-                        List<SettingsImage.ImageAlignment> alignmentsList = imageSettings.getAlignment();
-                        int alignment = 0;
-                        for(SettingsImage.ImageAlignment imageAlignment: alignmentsList){
-                            alignment+=imageAlignment.getValue();
-                        }
-                        image.setAlignment(alignment);
-                        //transparency doesn't work. It only works for monochrome or grayscale masks
-                        //image.setTransparency(new int[] {0xF0, 0xFF});
-                        //rotation
-                        image.setRotationDegrees(imageSettings.getRotationDegrees());
+//                        if(imageSettings.getScale().equals("fit")){
+//                            image.scaleToFit(PageSize.A4.getWidth() - (document.leftMargin() + document.rightMargin()), PageSize.A4.getHeight() - (document.topMargin() + document.bottomMargin()));
+//                        }
+                        Image image = applyImageSettings(myFile, document);
                         document.add(image);
                         break;
                     case "text" :
@@ -323,69 +333,28 @@ public class FileSystemStorageService implements StorageService{
 
                         break;
                     case "word" :
-                        StringBuilder processOutput = new StringBuilder();
                         String wordJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/","") + "scripts/SaveWordAsPDF.js";
-                        runtime = Runtime.getRuntime();
-                        process = runtime.exec("cscript.exe //nologo " + wordJsPath + " " + myFile.getFile().getAbsolutePath());
-                        try (BufferedReader processOutputReader = new BufferedReader(
-                                new InputStreamReader(process.getInputStream()));) {
-                            String outputLine;
-                            while ((outputLine = processOutputReader.readLine()) != null) {
-                                processOutput.append(outputLine).append(System.lineSeparator());
-                            }
-                            process.waitFor();
-                            if (processOutput.indexOf("Done.") != -1){
-                                File word = new File(uploadPath + "temp/" + FilenameUtils.getBaseName(myFile.getName()) + ".pdf");
-                                addPdf(document, pdfWriter, reader, word);
-                            } else{
-                                //eroare conversie
-                            }
+                        String workToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
+                        if (fileToPDFAndMerge(myFile, wordJsPath, workToPDFPath)){
+                            addPdf(document, pdfWriter, reader, new File(workToPDFPath));
                         }
-                        /*File wordFile = myFile.getFile();
-                        File outputPdfFile = new File(uploadPath + "temp/" + FilenameUtils.getBaseName(myFile.getName()) + ".pdf");
 
-                        PDFService MySevenPDFServiceObject = new PDFService("http://localhost:8080", "sevenpdf", "sevenpdf");
+                        /*PDFService MySevenPDFServiceObject = new PDFService("http://localhost:8080", "sevenpdf", "sevenpdf");
                         MySevenPDFServiceObject.Convert(wordFile, outputPdfFile);*/
 
                         break;
                     case "excel":
                         String excelJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/","") + "scripts/SaveExcelAsPDF.js";
-                        runtime = Runtime.getRuntime();
-                        process = runtime.exec("cscript.exe //nologo " + excelJsPath + " " + myFile.getFile().getAbsolutePath());
-                        processOutput = new StringBuilder();
-                        try (BufferedReader processOutputReader = new BufferedReader(
-                                new InputStreamReader(process.getInputStream()));) {
-                            String outputLine;
-                            while ((outputLine = processOutputReader.readLine()) != null) {
-                                processOutput.append(outputLine).append(System.lineSeparator());
-                            }
-                            process.waitFor();
-                            if (processOutput.indexOf("Done.") != -1){
-                                File excel = new File(uploadPath + "temp/" + FilenameUtils.getBaseName(myFile.getName()) + ".pdf");
-                                addPdf(document, pdfWriter, reader, excel);
-                            } else{
-                                //eroare conversie
-                            }
+                        String excelToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
+                        if (fileToPDFAndMerge(myFile, excelJsPath, excelToPDFPath)){
+                            addPdf(document, pdfWriter, reader, new File(excelToPDFPath));
                         }
                         break;
                     case "powerPoint":
                         String pptJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/","") + "scripts/SavePowerPointAsPDF.js";
-                        runtime = Runtime.getRuntime();
-                        process = runtime.exec("cscript.exe //nologo " + pptJsPath + " " + myFile.getFile().getAbsolutePath());
-                        processOutput = new StringBuilder();
-                        try (BufferedReader processOutputReader = new BufferedReader(
-                                new InputStreamReader(process.getInputStream()));) {
-                            String outputLine;
-                            while ((outputLine = processOutputReader.readLine()) != null) {
-                                processOutput.append(outputLine).append(System.lineSeparator());
-                            }
-                            process.waitFor();
-                            if (processOutput.indexOf("Done.") != -1){
-                                File ppt = new File(uploadPath + "temp/" + FilenameUtils.getBaseName(myFile.getName()) + ".pdf");
-                                addPdf(document, pdfWriter, reader, ppt);
-                            } else{
-                                //eroare conversie
-                            }
+                        String pptToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
+                        if (fileToPDFAndMerge(myFile, pptJsPath, pptToPDFPath)){
+                            addPdf(document, pdfWriter, reader, new File(pptToPDFPath));
                         }
 
                         break;
@@ -405,8 +374,66 @@ public class FileSystemStorageService implements StorageService{
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //generationProgressBar = 0;
+        LOGGER.log(Level.INFO, "PDF merge complete.");
         return "ok";
+    }
+
+    private Image applyImageSettings(MyFile myFile, Document document) throws IOException, BadElementException {
+        SettingsImage settingsImage = (SettingsImage) myFile.getSettings();
+        if (settingsImage != null) {
+            Image image = Image.getInstance(myFile.getFile().getPath());
+
+            image.scalePercent(settingsImage.getScale());
+            image.setRotationDegrees(settingsImage.getRotationDegrees());
+
+            //image watermark
+            if (settingsImage.isAbsolutePosition()) {
+                image.setAbsolutePosition(settingsImage.getPositionAbsolute().getX(), settingsImage.getPositionAbsolute().getY());
+            } else {
+                switch (settingsImage.getPositionPredefined()) {
+                    case TOP_LEFT:
+                        image.setAbsolutePosition(0,
+                                document.getPageSize().getHeight() - image.getScaledHeight());
+                        break;
+                    case TOP_CENTER:
+                        image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2,
+                                document.getPageSize().getHeight() - image.getScaledHeight());
+                        break;
+                    case TOP_RIGHT:
+                        image.setAbsolutePosition(document.getPageSize().getWidth() - image.getScaledWidth(),
+                                document.getPageSize().getHeight() - image.getScaledHeight());
+                        break;
+                    case MIDDLE_LEFT:
+                        image.setAbsolutePosition(0, (document.getPageSize().getHeight() - image.getScaledHeight()) / 2);
+                        break;
+                    case CENTER:
+                        image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2,
+                                (document.getPageSize().getHeight() - image.getScaledHeight()) / 2);
+                        break;
+                    case MIDDLE_RIGHT:
+                        image.setAbsolutePosition(document.getPageSize().getWidth() - image.getScaledWidth(),
+                                (document.getPageSize().getHeight() - image.getScaledHeight()) / 2);
+                        break;
+                    case BOTTOM_LEFT:
+                        image.setAbsolutePosition(0, 0);
+                        break;
+                    case BOTTOM_CENTER:
+                        image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2, 0);
+                        break;
+                    case BOTTOM_RIGHT:
+                        image.setAbsolutePosition(document.getPageSize().getWidth() - image.getScaledWidth(), 0);
+                        break;
+                    default:
+                        image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2,
+                                (document.getPageSize().getHeight() - image.getScaledHeight()) / 2);
+                }
+            }
+            if (settingsImage.getWrappingStyle() != SettingsImage.ImageAlignment.None){
+                image.setAlignment(settingsImage.getWrappingStyle().getValue());
+            }
+            return image;
+        }
+        return null;
     }
 
     private void addPdf(Document document, PdfWriter pdfWriter, List<PdfReader> reader, MyFile myFile) throws IOException {
@@ -414,19 +441,25 @@ public class FileSystemStorageService implements StorageService{
         document.newPage();
         PdfContentByte cb = pdfWriter.getDirectContent();
         reader.add(new PdfReader(myFile.getFile().getAbsolutePath()));
-        SettingsPDF pdfSettings = (SettingsPDF) myFile.getSettings();
-        if(!pdfSettings.getPagesIncluded().equals("All")){
-            reader.get(reader.size()-1).selectPages(pdfSettings.getPagesIncluded());
+        if(reader.get(reader.size()-1).isEncrypted()){
+            LOGGER.log(Level.WARNING, myFile.getFile().getName() + " is encrypted. Cannot perform merge operation.");
+            reader.add(reader.size()-1,unlockPdf(reader.get(reader.size()-1)));
         }
-        for(int i = 1; i <= reader.get(reader.size()-1).getNumberOfPages(); i++) {
-            Rectangle pageSize = reader.get(reader.size()-1).getPageSize(i);
-            document.setPageSize(pageSize);
+        if (!reader.get(reader.size()-1).isEncrypted()){
+            SettingsPDF pdfSettings = (SettingsPDF) myFile.getSettings();
+            if (!pdfSettings.getPagesIncluded().equals("All")) {
+                reader.get(reader.size() - 1).selectPages(pdfSettings.getPagesIncluded());
+            }
+            for (int i = 1; i <= reader.get(reader.size() - 1).getNumberOfPages(); i++) {
+                Rectangle pageSize = reader.get(reader.size() - 1).getPageSize(i);
+                document.setPageSize(pageSize);
+                document.newPage();
+                PdfImportedPage page = pdfWriter.getImportedPage(reader.get(reader.size() - 1), i);
+                cb.addTemplate(page, 0, 0);
+            }
+            document.setPageSize(originalPageSize);
             document.newPage();
-            PdfImportedPage page = pdfWriter.getImportedPage(reader.get(reader.size()-1), i);
-            cb.addTemplate(page, 0, 0);
         }
-        document.setPageSize(originalPageSize);
-        document.newPage();
     }
 
     private void addPdf(Document document, PdfWriter pdfWriter, List<PdfReader> reader, File file) throws IOException {
@@ -443,5 +476,44 @@ public class FileSystemStorageService implements StorageService{
         }
         document.setPageSize(originalPageSize);
         document.newPage();
+    }
+
+    private boolean fileToPDFAndMerge(MyFile myFile, String jsPath, String fileToPDFPath) throws IOException, InterruptedException{
+        if (! new File(fileToPDFPath).exists()) {
+            Runtime runtime = Runtime.getRuntime();
+            Process process = runtime.exec("cscript.exe //nologo " + jsPath + " " + myFile.getFile().getAbsolutePath());
+
+            StringBuilder processOutput = new StringBuilder();
+            try (BufferedReader processOutputReader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));) {
+                String outputLine;
+                while ((outputLine = processOutputReader.readLine()) != null) {
+                    processOutput.append(outputLine).append(System.lineSeparator());
+                }
+                process.waitFor();
+                if (processOutput.indexOf("Done.") != -1) {
+                    File ppt = new File(fileToPDFPath);
+                } else {
+                    System.out.println("Eroare conversie ppt");
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static PdfReader unlockPdf(PdfReader reader) {
+        if (reader == null) {
+            return reader;
+        }
+        try {
+            Field f = reader.getClass().getDeclaredField("encrypted");
+            f.setAccessible(true);
+            f.set(reader, false);
+            LOGGER.log(Level.INFO, "Document unlocked for edit mode");
+        } catch (Exception e) { // ignore
+            LOGGER.log(Level.INFO, "Document could not be unlocked for edit mode");
+        }
+        return reader;
     }
 }

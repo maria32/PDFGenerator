@@ -2,10 +2,6 @@
 <html ng-app="PDF">
 
 <head>
-
-    <!-- Fix for old browsers -->
-    <!--<script src="http://nervgh.github.io/js/es5-shim.min.js"></script>-->
-    <!--<script src="http://nervgh.github.io/js/es5-sham.min.js"></script>-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Generator</title>
 
@@ -33,6 +29,8 @@
     <script src="library/nya-bootstrap-select/nya-bs-select.min.js"></script>
     <script src="library/jquery/image-picker/image-picker.js"></script>
     <link href="library/jquery/image-picker/image-picker.css" rel="stylesheet">
+    <script src="library/notify.min.js"></script>
+    <script src="library/angular/ngStorage.min.js"></script>
     <!--<script src="library/angular/ui-bootstrap-tpls-1.2.5.min.js"></script>-->
     <!--<script src="library/notify.min.js"></script>-->
     <!--<script src="library/ngstorage/ngStorage.min.js"></script>-->
@@ -44,46 +42,228 @@
 <body>
 <div class="container">
     <!--Header-->
-    <div class="navbar navbar-default">
-        <a class="my-logo" href="/#/">PDF Generator</a>
+    <div class="navbar header">
+        <div class="row">
+            <a class="my-logo" style="max-height:100px;"><img src="logo.png" width="30%"></a>
+            <div class="right" ng-show="user == undefined">
+                <a class="authenticate" data-toggle="modal" data-target="#signInModal">Sign in</a>
+                <a class="authenticate stand-out-white" data-toggle="modal" data-target="#signUpModal">Sign up</a>
+            </div>
+            <div class="right" ng-show="user != null">
+                {{user.username}}
+                <a class="authenticate stand-out-white" aria-hidden="true" ng-click="logout()">Logout</a>
+            </div>
+        </div>
     </div>
-    <div>
-        <a href="#" class="my-btn my-btn-round my-btn-upload">
-            <i class="icon glyphicon glyphicon-upload"></i>
-            <p>Upload files</p>
-        </a>
-        <a href="#!/pdf-settings" class="my-btn my-btn-round my-btn-output">
-            <i class="icon glyphicon glyphicon-file"></i>
-            <p>Output settings</p>
-        </a>
-        <a href="#!/settings" class="my-btn my-btn-round my-btn-settings">
-            <i class="icon glyphicon glyphicon-duplicate"></i>
-            <p>Files settings</p>
-            <span class="badge badge-files">{{filesNo}}</span>
-        </a>
-        <a href="" id="generate-PDF-button" class="my-btn my-btn-round my-btn-export" ng-click="generatePDF()">
-            <i class="icon glyphicon glyphicon-floppy-save"></i>
-            <p>Export to PDF</p>
-        </a>
+
+    <!--Sign in modal-->
+    <div class="modal fade" id="signInModal" tabindex="-1" role="dialog" aria-labelledby="signInModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog login-box" role="document">
+            <div class="modal-content">
+                <div class="modal-header login">
+                    <h3 class="modal-title" id="signInModalLabel">Sign in</h3>
+                </div>
+                <form>
+                    <div class="modal-body">
+                        <!-- Username -->
+                        <div class="input-group margin-top">
+                            <span class="input-group-addon white glyphicon-background-green"><i class="glyphicon glyphicon-user"></i></span><input type="text" class="form-control" name="username" ng-model="credentials.username" placeholder="username" autofocus>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="input-group margin-top">
+                            <span class="input-group-addon white glyphicon-background-green"><i class="glyphicon glyphicon-lock"></i></span><input type="password" class="form-control" name="password" ng-model="credentials.password" placeholder="password">
+                        </div>
+                        <!--Remember me-->
+                        <div class="input-group margin-top">
+                            <div class="checkbox">
+                                <label><input id="remember-me" type="checkbox" name="remember-me" value="1"> Remember me</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal" data-toggle="modal" data-target="#signUpModal">Create account</button>
+                        <button type="submit" class="btn glyphicon-background-green" data-dismiss="modal" ng-click="login()">Login</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Sign up modal-->
+    <div class="modal fade" id="signUpModal" tabindex="-1" role="dialog" aria-labelledby="signUpModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog login-box" role="document">
+            <div class="modal-content">
+                <div class="modal-header login">
+                    <h3 class="modal-title" id="signUpModalLabel">Sign up</h3>
+                </div>
+                <form>
+                    <div class="modal-body">
+                        <!-- Email -->
+                        <div class="input-group margin-top">
+                            <span class="input-group-addon white glyphicon-background-green"><i class="glyphicon glyphicon-envelope"></i></span><input type="text" class="form-control" name="email" ng-model="credentials.email" placeholder="email address" autofocus>
+                        </div>
+                        <!-- Username -->
+                        <div class="input-group margin-top">
+                            <span class="input-group-addon white glyphicon-background-green"><i class="glyphicon glyphicon-user"></i></span><input type="text" class="form-control" name="username" ng-model="credentials.username" placeholder="username" autofocus>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="input-group margin-top">
+                            <span class="input-group-addon white glyphicon-background-green"><i class="glyphicon glyphicon-lock"></i></span><input type="password" class="form-control" name="password" ng-model="credentials.password" placeholder="password">
+                        </div>
+                        <!--Remember me-->
+                        <div class="input-group margin-top">
+                            <div class="checkbox">
+                                <label><input type="checkbox" name="remember-me" value="1"> Remember me</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal" data-toggle="modal" data-target="#signInModal">I have an account</button>
+                        <button type="submit" class="btn glyphicon-background-green" data-dismiss="modal" ng-click="signup()">Sign Up</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div ng-show="user != null">
+        <div>
+            <table>
+                <tr>
+                    <th class="step">Step 1</th>
+                    <th class="step">Step 2</th>
+                    <th class="step">Step 3</th>
+                    <th class="step">Step 4</th>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="#!/upload" target="_self" class="my-btn my-btn-round my-btn-upload">
+                            <i class="icon glyphicon glyphicon-upload"></i>
+                            <p>Upload files</p>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="#!/pdf-settings" class="my-btn my-btn-round my-btn-output">
+                            <i class="icon glyphicon glyphicon-file"></i>
+                            <p>Output settings<br><b>(optional)</b></p>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="#!/settings" class="my-btn my-btn-round my-btn-settings">
+                            <i class="icon glyphicon glyphicon-duplicate"></i>
+                            <p>Files settings</p>
+                            <span class="badge badge-files">{{filesNo}}</span>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="" id="generate-PDF-button" class="my-btn my-btn-round my-btn-export" ng-click="generatePDF()">
+                            <i class="icon glyphicon glyphicon-floppy-save"></i>
+                            <p>Export to PDF</p>
+                        </a>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+        <div>
+            <div class="progress" ng-show="showProgressCircle == true">
+                <div class="progress-bar progress-bar-success progress-bar-striped active"
+                     id="my-progress"
+                     role="progressbar"
+                     aria-valuenow="0"
+                     aria-valuemin="0" aria-valuemax="100"
+                     style="min-width: 2em;">
+                    {{progress}}%
+                </div>
+            </div>
+            <hr>
+
+        </div>
+
+    </div>
+    <div ng-show="user == undefined">
+        <div>
+            <div class="center">
+                <img src="image-description.png" style="width:70%; max-width: 400px;">
+            </div>
+
+            <div class="app-description">
+                Convert Word, Excel, PowerPoint, images and <a href="#!/extensions"><span class="badge">more</span></a> to PDF.<br>
+                Go4PDF is a free application. Create an account and start converting - that simple &#9786;.
+            </div>
+
+            <!--<div class="app-description">
+                All posibilities in one application.
+                Quality is guaranteed.<br>
+                If you wish for extra capabilities, tell us about it. We'll get it done.
+            </div>-->
+            <br>
+            <h4>
+                In 4 simple steps, you can get almost any file converted to PDF, with customizable options at your hand.
+            </h4>
+            <br>
+            <div class="center">
+                <div class="row">
+                    <div class="col-xs-6 col-sm-3">
+                        <p class="step">Step 1</p>
+                        <a class="my-btn my-btn-round my-btn-upload">
+                            <i class="icon glyphicon glyphicon-upload"></i>
+                            <p>Upload files</p>
+                        </a>
+                        <p>Upload all of your files with a single click or drag and drop.</p>
+                    </div>
+                    <div class="col-xs-6 col-sm-3">
+                        <p class="step">Step 2</p>
+                        <a class="my-btn my-btn-round my-btn-output">
+                            <i class="icon glyphicon glyphicon-file"></i>
+                            <p>Output settings</p>
+                        </a>
+                        <p>Personalize your PDF output. Add a password, watermark (image or text) by settings its size, position and opacity.<br>This step is optional.</p>
+                    </div>
+                    <div class="col-xs-6 col-sm-3">
+                        <p class="step">Step 3</p>
+                        <a class="my-btn my-btn-round my-btn-settings">
+                            <i class="icon glyphicon glyphicon-duplicate"></i>
+                            <p>Files settings</p>
+                        </a>
+                        <p>Customize each of your files before conversion. You can select specific files from a document, rotate images, or change order of files after upload.</p>
+                    </div>
+                    <div class="col-xs-6 col-sm-3">
+                        <p class="step">Step 4</p>
+                        <a class="my-btn my-btn-round my-btn-export">
+                            <i class="icon glyphicon glyphicon-floppy-save"></i>
+                            <p>Export to PDF</p>
+                        </a>
+                        <p>Conversion to PDF is a click away. Never simpler.</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
 
     <div>
-        <hr>
-        <div ng-show="showProgressCircle == true">
-            <canvas id="pdf-generation-progress-circle" width="260" height="260"></canvas>
-        </div>
-        <div class="pdf-generation-progress-circle" data-animate="false">
-            <div class="circle" data-percent="75.3">
-                <div></div>
-            </div>
-        </div>
         <!--Content-->
-        <div class="content" ng-view>Test care nu trebuie sa se vada</div>
+        <div class="content" ng-view>Error loading content.</div>
+
         <script src="js/PDF.js"></script>
-        <script src="js/controller/MainController.js"></script>
-        <script src="js/controller/UploadCtrl.js"></script>
-        <script src="js/controller/PDFSettingsCtrl.js"></script>
-        <script src="js/controller/FilesSettingsCtrl.js"></script>
+        <div ng-show="user != null">
+            <script src="js/controller/UploadCtrl.js"></script>
+            <script src="js/controller/PDFSettingsCtrl.js"></script>
+            <script src="js/controller/FilesSettingsCtrl.js"></script>
+            <script src="js/service/NotificationService.js"></script>
+        </div>
+        <div class="app-description" id="footer">
+            <a class="authenticate stand-out-white">Here</a> you can find a demo of how the application works. You might want to check it out before creating an account, just so you know this is what you need.
+        </div>
+
     </div>
     <!--Footer-->
     <!--    <div class="container">
@@ -99,5 +279,7 @@
 <!--<div>
     <embed src="C:\Users\martanase\Desktop\upload\output\GeneratedPDF.pdf" width="800px" height="1100px" />
 </div>-->
+<!--<div class="footer" id="footer">Hello</div>-->
+
 </body>
 </html>

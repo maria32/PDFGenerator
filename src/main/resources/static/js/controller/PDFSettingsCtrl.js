@@ -1,12 +1,13 @@
 angular.module('PDF')
-    .controller('PDFSettingsCtrl', function ($scope, $http, Upload, $sce) {
+    .controller('PDFSettingsCtrl', function ($scope, $rootScope, $sessionStorage, $location, $http, Upload, NotificationService) {
 
+        if($sessionStorage.user == undefined){
+            $location.path("/login");
+        }
 
         function setPassword(ok) {
             console.log(ok.check());
         }
-
-        console.log("Output Settings");
 
         //get PDFSettings
         $scope.pdfSettings = null;
@@ -23,11 +24,9 @@ angular.module('PDF')
                 }
                 console.log($scope.pdfSettings);
             } else {
-                console.log("PDFSettings GET error");
+                NotificationService.error("PDF settings not retrieved.");
             }
         });
-
-        $scope.positions = ['TOP_LEFT', 'TOP_CENTER', 'TOP_RIGHT', 'MIDDLE_LEFT', 'CENTER', 'MIDDLE_RIGHT', 'BOTTOM_LEFT', 'BOTTOM_CENTER', 'BOTTOM_RIGHT'];
 
         $(function () {
             $('[data-toggle="popover"]').popover()
@@ -64,11 +63,12 @@ angular.module('PDF')
                 success: function(result){
                     console.log("Success: PDF Settings saved.");
                     if(result != "") {
+                        console.log(result.data);
 
                     }
                 },
                 error: function(e) {
-                    console.log("Error. PDF Settings not saved.");
+                    NotificationService.error("PDF Settings not saved.");
                 }
             });
         };
@@ -89,7 +89,7 @@ angular.module('PDF')
                         $scope.pdfSettings.imageWatermark.height = response.data.height;
                         $scope.fileName = null;
                     } else {
-                        console.log('upload file error');
+                        NotificationService.error('Failed to upload file');
                     }
                     $scope.postPDFSettings();
                 });

@@ -4,6 +4,7 @@ import com.PDF.model.MyFile;
 import com.PDF.model.Settings;
 import com.PDF.model.settings.*;
 import com.PDF.model.settings.image.PositionAbsolute;
+import com.PDF.utils.Position;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -47,18 +48,13 @@ public class MyFileDeserializer extends StdDeserializer<MyFile>{
         JsonNode settingsNode = node.get("settings");
         boolean pageBreak = settingsNode.get("pageBreak").asBoolean();
         if(image.contains(extension)){
-            //scale
-            String scale = settingsNode.get("scale").asText();
-            //rotation degrees
-            int rotationDegrees = settingsNode.get("rotationDegrees").asInt();
-            //alignment
-            List<String> alignmentsStringList = new ObjectMapper().convertValue(settingsNode.get("alignment"), List.class);
-            List<SettingsImage.ImageAlignment> alignment = new ArrayList<>();
-            for(String align : alignmentsStringList){
-                System.out.println(align);
-                alignment.add(SettingsImage.ImageAlignment.valueOf(align));
-            }
-            //position absolute
+
+            //TODO redo the line below
+            //settings = new SettingsImage(scale, alignment, rotationDegrees, positionAbsolute);
+
+            SettingsImage.ImageAlignment wrappingStyle = SettingsImage.ImageAlignment.valueOf(settingsNode.get("wrappingStyle").asText());
+            boolean absolutePosition = settingsNode.get("absolutePosition").asBoolean();
+            Position positionPredefined = Position.valueOf(settingsNode.get("positionPredefined").asText());
             PositionAbsolute positionAbsolute = null;
             if(settingsNode.get("positionAbsolute").isObject()) {
                 //nu intra aici. de schimbat conditia
@@ -66,7 +62,12 @@ public class MyFileDeserializer extends StdDeserializer<MyFile>{
                 System.out.println("x= " + positionAbsolute.getX());
                 System.out.println("y= " + positionAbsolute.getY());
             }
-            settings = new SettingsImage(scale, alignment, rotationDegrees, positionAbsolute);
+            int rotationDegrees = settingsNode.get("rotationDegrees").asInt();
+            int scale = settingsNode.get("scale").asInt();
+//            float opacity = settingsNode.get("opacity").floatValue();
+
+            settings = new SettingsImage(myFile.getFile(), wrappingStyle, absolutePosition, positionPredefined, positionAbsolute, rotationDegrees, scale);
+
         }else if(text.contains(extension)) {
             //fields to be added
             settings = new SettingsText();
