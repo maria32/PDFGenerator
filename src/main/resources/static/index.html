@@ -49,7 +49,7 @@
                 <a class="authenticate" data-toggle="modal" data-target="#signInModal">Sign in</a>
                 <a class="authenticate stand-out-white" data-toggle="modal" data-target="#signUpModal">Sign up</a>
             </div>
-            <div class="right" ng-show="user != null">
+            <div class="right" ng-show="user != undefined">
                 {{user.username}}
                 <a class="authenticate stand-out-white" aria-hidden="true" ng-click="logout()">Logout</a>
             </div>
@@ -261,7 +261,7 @@
             <script src="js/service/NotificationService.js"></script>
         </div>
         <div class="app-description" id="footer">
-            <a class="authenticate stand-out-white">Here</a> you can find a demo of how the application works. You might want to check it out before creating an account, just so you know this is what you need.
+            <a class="authenticate stand-out-white" href="#!/demo-instructions">Here</a> you can find a demo of how the application works. You might want to check it out before creating an account, just so you know this is what you need.
         </div>
 
     </div>

@@ -1,11 +1,11 @@
 package com.PDF.service;
 
 import com.PDF.model.MyFile;
+import com.PDF.model.User;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -28,15 +28,15 @@ public interface StorageService {
 
     void deleteAll();
 
-    List<MyFile> getAll();
+    List<MyFile> getAll(Long userId);
 
-    boolean deleteFile(String name, String type);
+    boolean deleteFile(Long userId, String name, String type);
 
-    void updateOrderOfFiles(List<Integer> listOfOrder);
+    void updateOrderOfFiles(Long userId, List<Integer> listOfOrder);
 
-    void updateSettingsOfFile(List<MyFile> files);
+    void updateSettingsOfFile(Long userId, List<MyFile> files);
 
-    String generatePDF();
+    String generatePDF(Long userId);
 
     int getGenerationProgressBar();
 

@@ -18,7 +18,7 @@ import java.util.List;
 public class SettingsImage extends Settings {
 
     public enum ImageAlignment{
-        None(0), Textwrap(4), Underlying(8);
+        None(0), Left(0), Middle(1), Right(2), Textwrap(4), Underlying(8);
         private int value;
         ImageAlignment(int value){
             this.value = value;
@@ -30,6 +30,7 @@ public class SettingsImage extends Settings {
     private float width;
     private float height;
     private ImageAlignment wrappingStyle = ImageAlignment.None;
+    private boolean fitToPage = false;
     private boolean absolutePosition = false;
     private Position positionPredefined = Position.CENTER;
     private PositionAbsolute positionAbsolute;
@@ -43,6 +44,7 @@ public class SettingsImage extends Settings {
 
     public SettingsImage(File file) {
         super.setType("image");
+        super.setPageBreak(true);
         if (file != null){
             Image image;
             try {
@@ -57,10 +59,10 @@ public class SettingsImage extends Settings {
         }
     }
 
-    public SettingsImage(File file, ImageAlignment wrappingStyle, boolean absolutePosition, Position positionPredefined, PositionAbsolute positionAbsolute, int rotationDegrees, int scale) {
+    public SettingsImage(File file, ImageAlignment wrappingStyle, boolean fitToPage, boolean absolutePosition, Position positionPredefined, PositionAbsolute positionAbsolute, int rotationDegrees, int scale) {
         this(file);
-        super.setType("image");
         this.wrappingStyle = wrappingStyle;
+        this.fitToPage = fitToPage;
         this.absolutePosition = absolutePosition;
         this.positionPredefined = positionPredefined;
         this.positionAbsolute = positionAbsolute;
@@ -92,6 +94,14 @@ public class SettingsImage extends Settings {
 
     public void setWrappingStyle(ImageAlignment wrappingStyle) {
         this.wrappingStyle = wrappingStyle;
+    }
+
+    public boolean isFitToPage() {
+        return fitToPage;
+    }
+
+    public void setFitToPage(boolean fitToPage) {
+        this.fitToPage = fitToPage;
     }
 
     public boolean isAbsolutePosition() {

@@ -31,12 +31,6 @@ public class FileUploadController {
         this.storageService = storageService;
     }
 
-    @RequestMapping(value = "/upload", method = RequestMethod.GET)
-    public String getUploadPage(){
-        System.out.println("Taking user to upload page");
-        return "#!/upload";
-    }
-
     @RequestMapping(value="/", method = RequestMethod.GET)
     public String listUploadedFiles(Model model) throws IOException {
 

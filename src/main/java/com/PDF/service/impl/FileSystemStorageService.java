@@ -2,15 +2,13 @@ package com.PDF.service.impl;
 
 import com.PDF.exception.StorageException;
 import com.PDF.exception.StorageFileNotFoundException;
-import com.PDF.model.MyFile;
-import com.PDF.model.PDFSettings;
-import com.PDF.model.PDFWatermark;
-import com.PDF.model.StorageProperties;
+import com.PDF.model.*;
 import com.PDF.model.settings.SettingsImage;
 import com.PDF.model.settings.SettingsPDF;
 import com.PDF.model.watermark.ImageWatermark;
 import com.PDF.service.PDFSettingsService;
 import com.PDF.service.StorageService;
+import com.PDF.service.UserService;
 import com.PDF.service.UserSessionService;
 import com.itextpdf.text.*;
 import com.itextpdf.text.Image;
@@ -32,7 +30,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -47,7 +47,8 @@ public class FileSystemStorageService implements StorageService {
     private static final Logger LOGGER = Logger.getLogger(FileSystemStorageService.class.getName());
 
     private final Path rootLocation;
-    private static List<MyFile> myFiles;
+//    private static Map<userId, userFiles> myFiles
+    private static Map<Long, List<MyFile>> myFiles = new HashMap<>();
     private static int generationProgressBar = 0;
 
     @Autowired
@@ -57,12 +58,11 @@ public class FileSystemStorageService implements StorageService {
     private UserSessionService userSessionService;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     @Value("${workspace.directory}")
     public String workingDirPath;
-
-    static{
-        myFiles = new ArrayList<>();
-    }
 
 
     public String getWorkingDirPath() {
@@ -167,36 +167,45 @@ public class FileSystemStorageService implements StorageService {
 
 
     @Override
-    public List<MyFile> getAll(){
-        File currentDirectory = checkUploadDirectory();
-        List<File> filesInMyFiles = new ArrayList<>();
-        for (MyFile myFile : myFiles) {
-            filesInMyFiles.add(myFile.getFile());
-        }
+    public List<MyFile> getAll(Long userId){
+        User existsUser = userService.getOne(userId);
+        if (existsUser != null) {
+            if (myFiles.get(existsUser.getId()) == null){
+                myFiles.put(existsUser.getId(), new ArrayList<>());
+            }
+            List<MyFile> userFiles = myFiles.get(existsUser.getId());
+            File currentDirectory = checkUploadDirectory();
+            List<File> filesInMyFiles = new ArrayList<>();
 
-        for (File file : currentDirectory.listFiles()) {
-            if (!file.isDirectory()) {
-                if (!filesInMyFiles.contains(file)) {
-                    myFiles.add(new MyFile(file));
-                    filesInMyFiles.add(file);
+            for (MyFile myFile : userFiles) {
+                filesInMyFiles.add(myFile.getFile());
+            }
+
+            for (File file : currentDirectory.listFiles()) {
+                if (!file.isDirectory()) {
+                    if (!filesInMyFiles.contains(file)) {
+                        userFiles.add(new MyFile(file));
+                        filesInMyFiles.add(file);
+                    }
                 }
             }
 
-
+            myFiles.put(existsUser.getId(), userFiles);
+            return myFiles.get(existsUser.getId());
         }
 
-        return myFiles;
+        return null;
     }
 
-    public boolean deleteFile(String name, String extension){
+    public boolean deleteFile(Long userId, String name, String extension){
         boolean deleteStatus = false;
         if(existsUploadDirectory()){
-            List<MyFile> files = getAll();
+            List<MyFile> files = getAll(userId);
             for(MyFile file: files){
                 if(file.getName().equals(name) && file.getExtension().equals(extension)){
                     try {
                         Files.delete(file.getFile().toPath());
-                        myFiles.remove(file);
+                        myFiles.get(userId).remove(file);
                         deleteStatus = true;
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -232,37 +241,36 @@ public class FileSystemStorageService implements StorageService {
         }
     }
 
-    public void updateOrderOfFiles(List<Integer> listOfOrder){
+    public void updateOrderOfFiles(Long userId, List<Integer> listOfOrder){
 
         List<MyFile> myFilesNewOrder = new ArrayList<>();
 
-        if(myFiles.size() != listOfOrder.size()){
+        if(myFiles.get(userId).size() != listOfOrder.size()){
             System.out.println("Eroare de reordonare in FileSystemStorageService:updateOrderOfFiles()");
         } else {
             for (Integer id : listOfOrder) {
-                for (MyFile myFile : myFiles) {
+                for (MyFile myFile : myFiles.get(userId)) {
                     if (myFile.getId() == id) {
                         myFilesNewOrder.add(myFile);
                     }
                 }
             }
-            myFiles = new ArrayList<>();
-            myFiles = myFilesNewOrder;
+            myFiles.put(userId, myFilesNewOrder);
         }
     }
 
-    public void updateSettingsOfFile(List<MyFile> files){
+    public void updateSettingsOfFile(Long userId, List<MyFile> files){
         System.out.println("Updating...");
         for(MyFile myFile: files){
             System.out.println(myFile.getName());
         }
-        if(files.size() == myFiles.size()){
-            myFiles = files;
+        if(files.size() == myFiles.get(userId).size()){
+            myFiles.put(userId, files);
         }
 
     }
 
-    public String generatePDF() {
+    public String generatePDF(Long userId) {
         LOGGER.log(Level.INFO, "PDF merger started");
         generationProgressBar = 0;
         Document document = new Document();
@@ -288,8 +296,8 @@ public class FileSystemStorageService implements StorageService {
             //pdf settings: password, watermark
             PDFSettings settingsPDF = pdfSettingsService.getPDFSettings();
             if(settingsPDF.getPassword() != null && !settingsPDF.getPassword().equals("")){
-                String owner = "Magda";
-                pdfWriter.setEncryption(settingsPDF.getPassword().getBytes(), owner.getBytes(), 0, PdfWriter.ENCRYPTION_AES_128);
+                String owner = "Go4PDF";
+                pdfWriter.setEncryption(settingsPDF.getPassword().getBytes(), owner.getBytes(), 0 , PdfWriter.ENCRYPTION_AES_128);
             }
             if((settingsPDF.getImageWatermark() != null && settingsPDF.getImageWatermark().getWatermark() != null) ||
                     (settingsPDF.getTextWatermark() != null && settingsPDF.getTextWatermark().getWatermark() != null)){
@@ -305,7 +313,7 @@ public class FileSystemStorageService implements StorageService {
             //for PDF instances
             List<PdfReader> reader = new ArrayList<>();
 
-            for(MyFile myFile : myFiles){
+            for(MyFile myFile : myFiles.get(userId)){
                 if(myFile.getSettings().isPageBreak()){
                     document.newPage();
                 }
@@ -315,12 +323,10 @@ public class FileSystemStorageService implements StorageService {
                 System.out.println(myFile.getName());
                 switch(myFile.getSettings().getType()){
                     case "image" :
-//                        if(imageSettings.getScale().equals("fit")){
-//                            image.scaleToFit(PageSize.A4.getWidth() - (document.leftMargin() + document.rightMargin()), PageSize.A4.getHeight() - (document.topMargin() + document.bottomMargin()));
-//                        }
                         Image image = applyImageSettings(myFile, document);
                         document.add(image);
                         break;
+
                     case "text" :
                         document.add(Chunk.NEWLINE); // solution to image aligment TEXTWRAP
                         String FONT = "resources/fonts/FreeSans.ttf";
@@ -364,8 +370,12 @@ public class FileSystemStorageService implements StorageService {
                 }
                 generationProgressBar++;
             }
-
             document.close();
+//            PdfReader pdfReader = new PdfReader(pdfFile.getAbsolutePath());
+//            PdfStamper stamper = new PdfStamper(pdfReader, new FileOutputStream(pdfFile.getAbsolutePath()));
+//            stamper.setEncryption(null, null, ~(PdfWriter.ALLOW_COPY | PdfWriter.ALLOW_PRINTING), PdfWriter.STANDARD_ENCRYPTION_128);
+//            stamper.close();
+//            pdfReader.close();
             for (PdfReader readerItem : reader){
                 readerItem.close();
             }
@@ -385,51 +395,55 @@ public class FileSystemStorageService implements StorageService {
 
             image.scalePercent(settingsImage.getScale());
             image.setRotationDegrees(settingsImage.getRotationDegrees());
-
-            //image watermark
-            if (settingsImage.isAbsolutePosition()) {
-                image.setAbsolutePosition(settingsImage.getPositionAbsolute().getX(), settingsImage.getPositionAbsolute().getY());
-            } else {
-                switch (settingsImage.getPositionPredefined()) {
-                    case TOP_LEFT:
-                        image.setAbsolutePosition(0,
-                                document.getPageSize().getHeight() - image.getScaledHeight());
-                        break;
-                    case TOP_CENTER:
-                        image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2,
-                                document.getPageSize().getHeight() - image.getScaledHeight());
-                        break;
-                    case TOP_RIGHT:
-                        image.setAbsolutePosition(document.getPageSize().getWidth() - image.getScaledWidth(),
-                                document.getPageSize().getHeight() - image.getScaledHeight());
-                        break;
-                    case MIDDLE_LEFT:
-                        image.setAbsolutePosition(0, (document.getPageSize().getHeight() - image.getScaledHeight()) / 2);
-                        break;
-                    case CENTER:
-                        image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2,
-                                (document.getPageSize().getHeight() - image.getScaledHeight()) / 2);
-                        break;
-                    case MIDDLE_RIGHT:
-                        image.setAbsolutePosition(document.getPageSize().getWidth() - image.getScaledWidth(),
-                                (document.getPageSize().getHeight() - image.getScaledHeight()) / 2);
-                        break;
-                    case BOTTOM_LEFT:
-                        image.setAbsolutePosition(0, 0);
-                        break;
-                    case BOTTOM_CENTER:
-                        image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2, 0);
-                        break;
-                    case BOTTOM_RIGHT:
-                        image.setAbsolutePosition(document.getPageSize().getWidth() - image.getScaledWidth(), 0);
-                        break;
-                    default:
-                        image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2,
-                                (document.getPageSize().getHeight() - image.getScaledHeight()) / 2);
-                }
+            if (settingsImage.isFitToPage()){
+                image.scaleToFit(PageSize.A4.getWidth() - (document.leftMargin() + document.rightMargin()), PageSize.A4.getHeight() - (document.topMargin() + document.bottomMargin()));
             }
+
             if (settingsImage.getWrappingStyle() != SettingsImage.ImageAlignment.None){
                 image.setAlignment(settingsImage.getWrappingStyle().getValue());
+            } else {
+                //image watermark
+                if (settingsImage.isAbsolutePosition()) {
+                    image.setAbsolutePosition(settingsImage.getPositionAbsolute().getX(), settingsImage.getPositionAbsolute().getY());
+                } else {
+                    switch (settingsImage.getPositionPredefined()) {
+                        case TOP_LEFT:
+                            image.setAbsolutePosition(0,
+                                    document.getPageSize().getHeight() - image.getScaledHeight());
+                            break;
+                        case TOP_CENTER:
+                            image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2,
+                                    document.getPageSize().getHeight() - image.getScaledHeight());
+                            break;
+                        case TOP_RIGHT:
+                            image.setAbsolutePosition(document.getPageSize().getWidth() - image.getScaledWidth(),
+                                    document.getPageSize().getHeight() - image.getScaledHeight());
+                            break;
+                        case MIDDLE_LEFT:
+                            image.setAbsolutePosition(0, (document.getPageSize().getHeight() - image.getScaledHeight()) / 2);
+                            break;
+                        case CENTER:
+                            image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2,
+                                    (document.getPageSize().getHeight() - image.getScaledHeight()) / 2);
+                            break;
+                        case MIDDLE_RIGHT:
+                            image.setAbsolutePosition(document.getPageSize().getWidth() - image.getScaledWidth(),
+                                    (document.getPageSize().getHeight() - image.getScaledHeight()) / 2);
+                            break;
+                        case BOTTOM_LEFT:
+                            image.setAbsolutePosition(0, 0);
+                            break;
+                        case BOTTOM_CENTER:
+                            image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2, 0);
+                            break;
+                        case BOTTOM_RIGHT:
+                            image.setAbsolutePosition(document.getPageSize().getWidth() - image.getScaledWidth(), 0);
+                            break;
+                        default:
+                            image.setAbsolutePosition((document.getPageSize().getWidth() - image.getScaledWidth()) / 2,
+                                    (document.getPageSize().getHeight() - image.getScaledHeight()) / 2);
+                    }
+                }
             }
             return image;
         }

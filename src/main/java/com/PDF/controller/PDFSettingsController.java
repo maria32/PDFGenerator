@@ -21,6 +21,13 @@ public class PDFSettingsController {
     @Autowired
     private PDFSettingsService pdfSettingsService;
 
+    @RequestMapping(method = RequestMethod.GET)
+    @ResponseBody
+    public String getPdfSettingsPage(){
+        System.out.println("Taking user to pdf-settings page");
+        return "template/pdf-settings";
+    }
+
     @RequestMapping(value="/", method = RequestMethod.GET)
     @ResponseBody
     public PDFSettings getPDFSettings(){
@@ -28,13 +35,14 @@ public class PDFSettingsController {
         return pdfSettingsService.getPDFSettings();
     }
 
-    @RequestMapping(value="/", method = RequestMethod.POST)
+    @RequestMapping(value="/save/", method = RequestMethod.POST)
+    @ResponseBody
     public PDFSettings setPDFSettings(@RequestBody PDFSettings pdfSettings) {
         System.out.println("controller: " + pdfSettings.toString());
         return pdfSettingsService.createPDFSettings(pdfSettings);
     }
 
-    @RequestMapping(value="/upload-watermark-picture", method = RequestMethod.POST)
+    @RequestMapping(value="/upload-watermark-picture/", method = RequestMethod.POST)
     @ResponseBody
     public ImageWatermark addImageWatermark(@RequestParam(value="file", required = false) MultipartFile file) {
         System.out.println("set PDF settings controller - set7");

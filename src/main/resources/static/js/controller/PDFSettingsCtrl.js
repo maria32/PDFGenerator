@@ -58,13 +58,12 @@ angular.module('PDF')
             $.ajax({
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                url: '/pdf-settings/',
+                url: '/pdf-settings/save/',
                 data: JSON.stringify($scope.pdfSettings),
                 success: function(result){
-                    console.log("Success: PDF Settings saved.");
+                    NotificationService.success("PDF Settings saved.");
                     if(result != "") {
                         console.log(result.data);
-
                     }
                 },
                 error: function(e) {
@@ -78,7 +77,7 @@ angular.module('PDF')
                 Upload.upload({
                     method: 'POST',
                     //headers: {'Content-Type': 'application/json'},
-                    url: '/pdf-settings/upload-watermark-picture',
+                    url: '/pdf-settings/upload-watermark-picture/',
                     data: {file: $scope.file}
                 }).then(function (response) {
                     if (response.data != '') {

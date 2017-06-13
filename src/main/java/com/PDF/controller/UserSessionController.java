@@ -1,5 +1,6 @@
 package com.PDF.controller;
 
+import com.PDF.exception.ResourceAlreadyExistsException;
 import com.PDF.model.User;
 import com.PDF.service.UserSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +26,9 @@ public class UserSessionController {
     private static final Logger logger = Logger.getLogger(UserSessionController.class.getName());
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public String getLoginPage(){
+    @ResponseBody
+    public void getLoginPage(){
         System.out.println("Taking user to login page");
-        return "#!/login";
     }
 
     @RequestMapping(value="/login/credentials", method = RequestMethod.POST)
@@ -39,9 +40,19 @@ public class UserSessionController {
 
     @RequestMapping(value="/login/sing-up", method = RequestMethod.PUT)
     @ResponseBody
-    public String createUser(@RequestBody User credentials, HttpServletResponse response) throws Exception{
+    public User createUser(@RequestBody User credentials, HttpServletResponse response) {
         System.out.println("In sign-up with credentials controller method");
-        return userSessionService.createUserAndLogin(credentials, response);
+
+        User newUser = null;
+
+        try{
+            newUser = userSessionService.createUserAndLogin(credentials, response);
+        } catch (ResourceAlreadyExistsException rae){
+            response.addHeader("exception", "User already exists");
+        } catch (Exception e){
+            response.addHeader("exception", e.getMessage());
+        }
+        return newUser;
     }
 
     @RequestMapping(value="/logout", method = RequestMethod.GET)

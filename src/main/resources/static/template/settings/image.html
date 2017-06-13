@@ -1,38 +1,28 @@
-
-<!--    <div style="display: flex;">
-        <span>Scale</span>
-        <select class="input-group-sm col-sm-2" ng-model="file.settings.size">
-            <option value="original">Original size</option>
-            <option value="fit">Fit to page</option>
-            <option value="custom">Custom</option>
-        </select>
-    </div><br>
-    <br>-->
-
-    <div>
-        <ul class="nav nav-pills">
-            <li class="nav-item active">
-                <a class="my-blue-nav-item" data-target="#image-settings-position"
-                   data-toggle="tab">Position</a>
-            </li>
-            <li class="nav-item">
-                <a class="my-blue-nav-item" data-target="#image-settings-scale"
-                    data-toggle="tab">Scale</a>
-            </li>
-            <li class="nav-item">
-                <a class="my-blue-nav-item" data-target="#image-settings-rotate"
-                    data-toggle="tab">Rotate</a>
-            </li>
-        </ul>
-        <div class="tab-content left-blue-contour">
-            <div class="tab-pane active" id="image-settings-position">
-                <div class="bottom-blue-border">
-                    <b>Wrapping style</b>
-                    <br><br>
-                    <select ng-options="p for p in positionsWithinText"
-                            ng-model="file.settings.wrappingStyle">
-                    </select><br>
-                </div>
+<div>
+    <ul class="nav nav-pills">
+        <li class="nav-item active">
+            <a class="my-blue-nav-item" data-target="#image-settings-position-{{file.id}}"
+               data-toggle="tab">Position</a>
+        </li>
+        <li class="nav-item">
+            <a class="my-blue-nav-item" data-target="#image-settings-scale-{{file.id}}"
+                data-toggle="tab">Scale</a>
+        </li>
+        <li class="nav-item">
+            <a class="my-blue-nav-item" data-target="#image-settings-rotate-{{file.id}}"
+                data-toggle="tab">Rotate</a>
+        </li>
+    </ul>
+    <div class="tab-content left-blue-contour">
+        <div class="tab-pane active" id="image-settings-position-{{file.id}}">
+            <div class="bottom-blue-border">
+                <b>Wrapping style</b>
+                <br><br>
+                <select ng-options="p for p in positionsWithinText"
+                        ng-model="file.settings.wrappingStyle">
+                </select><br>
+            </div>
+            <div ng-show="file.settings.wrappingStyle != 'Left' && file.settings.wrappingStyle != 'Middle' && file.settings.wrappingStyle != 'Right'">
                 <b>Position</b>
                 <br><br>
                 <input type="radio" name="position" ng-model="file.settings.absolutePosition" data-ng-value="false">Set position from ...<br>
@@ -79,25 +69,30 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!--Scale-->
-            <div class="tab-pane margin-left" id="image-settings-scale">
+        <!--Scale-->
+        <div class="tab-pane margin-left" id="image-settings-scale-{{file.id}}">
+            <div class="bottom-blue-border">
                 <input type="checkbox" ng-model="file.settings.fitToPage" value="true">Fit to page
-                <input class="my-slider" type="range" name="scale" min="1" max="300" value="100"
+            </div>
+            <div ng-show="file.settings.fitToPage == false">
+                <input id="my-slider" class="my-slider" type="range" name="scale" min="1" max="300" value="100"
                        ng-model="file.settings.scale">
                 <div class="input-group scale-40 margin-top margin-bottom">
-                    <input class="my-input-sm form-control" type="number" ng-model="file.settings.scale">
+                    <input id="input-scale-{{file.id}}" class="my-input-sm form-control" type="number" ng-model="file.settings.scale">
                     <span class="input-group-addon scale-addon">%</span>
                 </div>
             </div>
-            <!--Rotate-->
-            <div class="tab-pane margin-left" id="image-settings-rotate">
-                Rotate:
-                <input class="my-input-sm form-control inline margin-bottom" type="number" min="0" max="360" ng-model="file.settings.rotationDegrees">
-                <div>
-                    <span class="text-primary">minim = 0, maxim = 360</span>
-                </div>
+
+        </div>
+        <!--Rotate-->
+        <div class="tab-pane margin-left" id="image-settings-rotate-{{file.id}}">
+            Rotate:
+            <input class="my-input-sm form-control inline margin-bottom" type="number" min="0" max="360" ng-model="file.settings.rotationDegrees">
+            <div>
+                <span class="text-primary">minim = 0, maxim = 360</span>
             </div>
         </div>
     </div>
-</ul>
+</div>

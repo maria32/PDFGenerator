@@ -10,10 +10,10 @@ angular.module('PDF')
         // $scope.log = '';
             $http({
                 method: 'GET',
-                url: '/convert/'
+                url: '/convert/' + $sessionStorage.user.id + '/'
             }).then(function successCallback(response) {
                 console.log(response.data);
-                if (response.data != "") {
+                if (response.data != undefined) {
                     $scope.files = response.data;
                     $rootScope.filesNo = $scope.files.length;
                     $sessionStorage.filesNo = $rootScope.filesNo;
@@ -40,7 +40,7 @@ angular.module('PDF')
             Upload.upload({
                 method: 'DELETE',
                 headers: {'Content-Type': 'application/json'},
-                url: '/convert/' + file.name + '/' + file.extension
+                url: '/convert/' + $sessionStorage.user.id + '/' + file.name + '/' + file.extension
             }).then(function (resp) {
                 if(resp.data == true){
                     $scope.files.splice(index, 1);
@@ -67,7 +67,7 @@ angular.module('PDF')
                 $.ajax({
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    url: '/update/order-of-files',
+                    url: '/update/' + $sessionStorage.user.id + '/order-of-files/',
                     data: JSON.stringify(listOfOrder),
                     success: function(result){
                         NotificationService.info("Updated order of files");
@@ -88,13 +88,13 @@ angular.module('PDF')
                     if($scope.files[i].settings.pagesIncluded == "")
                         $scope.files[i].settings.pagesIncluded = "All";
                 }
-                console.log($scope.files[i]);
+                // console.log($scope.files[i]);
             }
 
             $.ajax({
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                url: '/update/settings',
+                url: '/update/' + $sessionStorage.user.id + '/settings',
                 data: JSON.stringify($scope.files),
                 success: function(result){
                     NotificationService.success("Saved changes.");

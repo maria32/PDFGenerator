@@ -20,17 +20,21 @@ public class FileUpdateController {
     @Autowired
     private StorageService storageService;
 
-    @RequestMapping(value="/order-of-files", method = RequestMethod.POST)
-    public void updateOrderOfFiles(@RequestBody ArrayList<Integer> listOfOrder) {
-        storageService.updateOrderOfFiles(listOfOrder);
+    @RequestMapping(value="/{userId}/order-of-files/", method = RequestMethod.POST)
+    @ResponseBody
+    public void updateOrderOfFiles(@PathVariable("userId") Long userId,
+            @RequestBody ArrayList<Integer> listOfOrder) {
+        storageService.updateOrderOfFiles(userId, listOfOrder);
     }
 
 
-    @RequestMapping(value="/settings", method = RequestMethod.POST)
-    public void updateSettingsOfFiles(@RequestBody ArrayList<MyFile> files,
+    @RequestMapping(value="/{userId}/settings", method = RequestMethod.POST)
+    @ResponseBody
+    public void updateSettingsOfFiles(@PathVariable("userId") Long userId,
+            @RequestBody ArrayList<MyFile> files,
                                    RedirectAttributes redirectAttributes) {
         System.out.println("******I am in the update settings of files controller java");
-        storageService.updateSettingsOfFile(files);
+        storageService.updateSettingsOfFile(userId, files);
     }
 
     @RequestMapping(value="/settings/image-alignment-options/", method = RequestMethod.GET)

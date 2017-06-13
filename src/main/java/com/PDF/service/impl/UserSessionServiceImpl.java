@@ -1,5 +1,6 @@
 package com.PDF.service.impl;
 
+import com.PDF.exception.ResourceAlreadyExistsException;
 import com.PDF.model.User;
 import com.PDF.security.UserTokenState;
 import com.PDF.service.UserService;
@@ -35,15 +36,13 @@ public class UserSessionServiceImpl implements UserSessionService {
     private UserService userService;
 
     public User checkCredentialsAndLogin(User credentials, HttpServletResponse response) throws Exception {
-        logger.log(Level.INFO, "Check credentials for: user='" + credentials.getUsername() + "'");
         User user = userService.checkCredentials(credentials);
         if (user != null){
-            System.out.println("User valid: " + user);
-            logger.log(Level.INFO, "Credentials validated successfully.");
+            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
             username = user.getUsername();
+            user.setPassword("");
         }
 
-        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 
         //return user == null ? null : user;
 
@@ -73,10 +72,18 @@ public class UserSessionServiceImpl implements UserSessionService {
 
     }
 
+    public User checkUserInDB(User credentials) {
+        return userService.checkCredentials(credentials);
+    }
+
     @Override
-    public String createUserAndLogin(User credentials, HttpServletResponse response) throws Exception {
+    public User createUserAndLogin(User credentials, HttpServletResponse response) throws ResourceAlreadyExistsException {
         User user = userService.create(credentials);
-        return user == null ? "" : user.getUsername();
+        if (user != null){
+            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+            user.setPassword("");
+        }
+        return user == null ? null : user;
     }
 
     public void logout(){

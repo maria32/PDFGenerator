@@ -14,7 +14,6 @@ angular
 
     .run(function ($rootScope, $location, Upload,$http, NotificationService, $sessionStorage) {
 
-
         $rootScope.user = $sessionStorage.user;
         if ($sessionStorage.user == undefined) {
             console.log("go to login page.");
@@ -27,8 +26,6 @@ angular
         var headers = $rootScope.credentials ? {authorization : "Basic " + btoa($rootScope.credentials.username + ":" + $rootScope.credentials.password)} : {};
 
         $rootScope.login = function () {
-            console.log("Sending credentials:");
-            console.log($rootScope.credentials);
             if ($rootScope.credentials.username != undefined && $rootScope.credentials.password != undefined) {
                 $http({
                     method: 'POST',
@@ -36,12 +33,10 @@ angular
                     headers: {'Content-Type': 'application/json'},
                     data: JSON.stringify($rootScope.credentials)
                 }).then(function successCallback(response) {
-                    console.log("Result from server:");
-                    console.log(response.data);
                     if (response.data != null && response.data != "") {
                         $rootScope.user = response.data;
                         $sessionStorage.user = response.data;
-                            $location.path("/upload");
+                        $location.path("/upload");
                         NotificationService.success("Successful login");
                     } else {
                         console.log("Login failed.");
@@ -70,14 +65,14 @@ angular
                     data: JSON.stringify($rootScope.credentials)
                 }).then(function successCallback(response) {
                     console.log("Result from server:");
-                    console.log(response.data);
+                    console.log(headers()['Content-Range']);
                     if (response.data != null && response.data != "") {
-                        $rootScope.user.username = response.data;
-                        $sessionStorage.user.username = response.data;
+                        $rootScope.user = response.data;
+                        $sessionStorage.user = response.data;
                         $location.path("/upload");
                         NotificationService.success("Successful login");
                     } else {
-                        console.log("Username or email already exists.");
+                        NotificationService.error("Username or email already exists.");
                         $rootScope.user = undefined;
                         $location.path("/login");
                     }
@@ -86,7 +81,7 @@ angular
                 NotificationService.warn("Empty credentials.");
             }
 
-            $('#signInModal').modal('hide');
+            $('#signUpModal').modal('hide');
             $('body').removeClass('modal-open');
             $('.modal-backdrop').remove();
 
@@ -96,6 +91,7 @@ angular
             $sessionStorage.user = undefined;
             $rootScope.user = undefined;
             $sessionStorage.filesNo = undefined;
+            $rootScope.filesNo = undefined;
             $location.path('/login');
             console.log("User logged out.");
         };
@@ -138,7 +134,7 @@ angular
                 Upload.upload({
                     method: 'GET',
                     // headers: {'Content-Type': 'application/json'},
-                    url: '/convert/generatePDF'
+                    url: '/convert/' + $sessionStorage.user.id + '/generatePDF'
                 }).then(function (response) {
                     console.log("xxx" + response);
                     if (response.data != '') {
@@ -155,7 +151,7 @@ angular
 
 
         $rootScope.positions = ['TOP_LEFT', 'TOP_CENTER', 'TOP_RIGHT', 'MIDDLE_LEFT', 'CENTER', 'MIDDLE_RIGHT', 'BOTTOM_LEFT', 'BOTTOM_CENTER', 'BOTTOM_RIGHT'];
-        $rootScope.positionsWithinText = ["None", "Textwrap", "Underlying"];
+        $rootScope.positionsWithinText = ["None", "Left", "Middle", "Right", "Underlying"];
     })
 
     .config(function ($routeProvider, $httpProvider) {
@@ -164,7 +160,7 @@ angular
             templateUrl: 'template/upload.html',
             controller: 'UploadCtrl'
         }).when('/login', {
-            templateUrl: 'login.html',
+            templateUrl: 'login.html'
 
         }).when('/pdf-settings', {
             templateUrl: 'template/pdf-settings.html',
@@ -181,6 +177,8 @@ angular
             templateUrl: 'template/settings/text.html'
         }).when('/extensions', {
             templateUrl: 'template/extensions.html'
+        }).when('/demo-instructions', {
+            templateUrl: 'template/demo-instructions.html'
         }).otherwise({
             redirectTo: '/upload'
         });

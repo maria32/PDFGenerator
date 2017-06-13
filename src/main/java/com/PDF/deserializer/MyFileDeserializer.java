@@ -54,6 +54,7 @@ public class MyFileDeserializer extends StdDeserializer<MyFile>{
 
             SettingsImage.ImageAlignment wrappingStyle = SettingsImage.ImageAlignment.valueOf(settingsNode.get("wrappingStyle").asText());
             boolean absolutePosition = settingsNode.get("absolutePosition").asBoolean();
+            boolean fitToPage = settingsNode.get("fitToPage").asBoolean();
             Position positionPredefined = Position.valueOf(settingsNode.get("positionPredefined").asText());
             PositionAbsolute positionAbsolute = null;
             if(settingsNode.get("positionAbsolute").isObject()) {
@@ -66,7 +67,7 @@ public class MyFileDeserializer extends StdDeserializer<MyFile>{
             int scale = settingsNode.get("scale").asInt();
 //            float opacity = settingsNode.get("opacity").floatValue();
 
-            settings = new SettingsImage(myFile.getFile(), wrappingStyle, absolutePosition, positionPredefined, positionAbsolute, rotationDegrees, scale);
+            settings = new SettingsImage(myFile.getFile(), wrappingStyle, fitToPage, absolutePosition, positionPredefined, positionAbsolute, rotationDegrees, scale);
 
         }else if(text.contains(extension)) {
             //fields to be added

@@ -20,25 +20,26 @@ public class FileConvertController {
     @Autowired
     private StorageService storageService;
 
-    @RequestMapping(value="/", method = RequestMethod.GET)
+    @RequestMapping(value="/{userId}/", method = RequestMethod.GET)
     @ResponseBody
-    public List<MyFile> getAll() {
-        return storageService.getAll();
+    public List<MyFile> getAll(@PathVariable("userId") Long userId) {
+        return storageService.getAll(userId);
     }
 
-    @RequestMapping(value="/{name}/{extension}", method = RequestMethod.DELETE)
+    @RequestMapping(value="/{userId}/{name}/{extension}", method = RequestMethod.DELETE)
     @ResponseBody
-    public boolean deleteFile(@PathVariable("name") String name,
-                              @PathVariable("extension") String extension) {
+    public boolean deleteFile(@PathVariable("userId") Long userId,
+                                @PathVariable("name") String name,
+                                @PathVariable("extension") String extension) {
         System.out.println("deleting " + name + "." + extension);
 
-        return storageService.deleteFile(name, extension);
+        return storageService.deleteFile(userId, name, extension);
     }
 
-    @RequestMapping(value="/generatePDF", method = RequestMethod.GET)
+    @RequestMapping(value="/{userId}/generatePDF", method = RequestMethod.GET)
     @ResponseBody
-    public String generatePDF() {
-        return storageService.generatePDF();
+    public String generatePDF(@PathVariable("userId") Long userId) {
+        return storageService.generatePDF(userId);
     }
 
     @RequestMapping(value="/generatePDF/progress-bar", method = RequestMethod.GET)

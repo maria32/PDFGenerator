@@ -17,5 +17,7 @@ public interface UserSessionService {
 
     String getUsername();
 
-    String createUserAndLogin(User credentials, HttpServletResponse response) throws Exception;
+    User createUserAndLogin(User credentials, HttpServletResponse response) throws Exception;
+
+    User checkUserInDB(User credentials);
 }
