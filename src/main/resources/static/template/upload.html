@@ -1,14 +1,14 @@
 <div class="my-content-container">
-    <p class="popover-title my-title">Upload files</p>
+    <p class="popover-title my-title">{{uploadFiles.title}}</p>
     <br>
     <div>
-        <span class="text-primary">See all file <a href="#!/extensions"><span class="badge">extensions</span></a> that you can upload.</span>
+        <span class="text-primary">{{uploadFiles.extensionsText.part1}}<a href="#!/extensions"><span class="badge">{{uploadFiles.extensionsText.part2}}</span></a>{{uploadFiles.extensionsText.part3}}</span>
         <br>
-        <span class="text-primary">Nice to know:
+        <span class="text-primary">{{uploadFiles.toKnow}}
         <br>
          <ul class="indent">
-             <li>Maximum size per file is 5MB.</li>
-             <li>To add multiple files, press the Ctrl-key.</li>
+             <li>{{uploadFiles.toKnow1}}</li>
+             <li>{{uploadFiles.toKnow2}}</li>
         </ul>
         </span>
     </div>
@@ -20,13 +20,13 @@
          ngf-pattern="'image/*,application/pdf,text/plain,application/rtf,text/richtext,application/x-rtf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.slideshow,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel'">
         <p class="arrow"></p>
         <br>
-        Drop or click to upload
+        {{uploadFiles.uploadStyle}}
     </div>
     <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
-    Files:
+    {{uploadFiles.uploadedFiles}}
     <ul>
         <li ng-repeat="f in files">{{f.name}} {{f.$error}} {{f.$errorParam}}</li>
     </ul>
-    Upload Log:
+    {{uploadFiles.uploadStatus}}
     <pre>{{log}}</pre>
 </div>

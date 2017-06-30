@@ -5,6 +5,7 @@ import com.PDF.model.User;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
@@ -36,7 +37,7 @@ public interface StorageService {
 
     void updateSettingsOfFile(Long userId, List<MyFile> files);
 
-    String generatePDF(Long userId);
+    File generatePDF(Long userId, String downloadMethod);
 
     int getGenerationProgressBar();
 

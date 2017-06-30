@@ -5,7 +5,7 @@
 //inject angular file upload directives and services.
 // var app = angular.module('fileUpload', ['ngFileUpload']);
 angular.module('PDF')
-    .controller('UploadCtrl', function ($scope, $rootScope, $sessionStorage, $location, Upload, $timeout) {
+    .controller('UploadCtrl', function ($scope, $rootScope, $sessionStorage, $location, Upload, $timeout, NotificationService) {
 
         if($sessionStorage.user == undefined){
             $location.path("/login");
@@ -25,9 +25,11 @@ angular.module('PDF')
             if (files && files.length) {
                 for (var i = 0; i < files.length; i++) {
                     var file = files[i];
-                    console.log(file);
-                    if(file.name.search(" ") == -1) {
-                        if (!file.$error) {
+                    if(file.name.search(" ") != -1) {
+                        file.name = file.name.replace(" ", "_");
+                    }
+                    if (!file.$error) {
+                        if (file.size < 5242880) {
                             Upload.upload({
                                 method: 'POST',
                                 url: '/upload/',
@@ -48,11 +50,19 @@ angular.module('PDF')
                                     '% ' + evt.config.data.file.name + '\n' +
                                     $scope.log;
                             });
+                        } else {
+                            NotificationService.error("File '" + file.name + "' exceeded the maximum size allowed (5MB). File was not uploaded.");
                         }
-                    } else {
-                        $scope.log = 'Error: "' + file.name + '" name contains white spaces.\n' + $scope.log;
                     }
                 }
             }
+        };
+
+        $scope.romanianVersion = function () {
+            $scope.primaryHeading = 'Incarcare fisiere';
+        };
+
+        $scope.englishVersion = function () {
+            $scope.primaryHeading = 'Upload files';
         };
 });

@@ -5,14 +5,16 @@ import com.PDF.exception.StorageFileNotFoundException;
 import com.PDF.model.*;
 import com.PDF.model.settings.SettingsImage;
 import com.PDF.model.settings.SettingsPDF;
-import com.PDF.model.watermark.ImageWatermark;
 import com.PDF.service.PDFSettingsService;
 import com.PDF.service.StorageService;
 import com.PDF.service.UserService;
 import com.PDF.service.UserSessionService;
+import com.PDF.utils.MailSender;
 import com.itextpdf.text.*;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.pdf.*;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfImportedPage;
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.PdfWriter;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -270,122 +272,128 @@ public class FileSystemStorageService implements StorageService {
 
     }
 
-    public String generatePDF(Long userId) {
+    public File generatePDF(Long userId, String downloadMethod) {
         LOGGER.log(Level.INFO, "PDF merger started");
         generationProgressBar = 0;
-        Document document = new Document();
-        try {
-            File outputDir = new File(getUserDirPath().toString() + "/output");
-            if(!outputDir.exists()){
-                outputDir.mkdir();
-            }
+        File pdfFile = new File(getUserDirPath().toString() + "/output/GeneratedPDF.pdf");
 
-            File pdfFile = new File(getUserDirPath().toString() + "/output/GeneratedPDF.pdf");
-            if(!pdfFile.exists())
-                pdfFile.createNewFile();
-            else {
-                pdfFile.delete();
-                pdfFile.createNewFile();
-            }
-            PdfWriter pdfWriter = null;
+        User existsUser = userService.getOne(userId);
+        if (existsUser != null) {
+            Document document = new Document();
             try {
-                pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
-            }catch (FileNotFoundException fnfe){
-                System.out.println("Fisier in uz");
-            }
-            //pdf settings: password, watermark
-            PDFSettings settingsPDF = pdfSettingsService.getPDFSettings();
-            if(settingsPDF.getPassword() != null && !settingsPDF.getPassword().equals("")){
-                String owner = "Go4PDF";
-                pdfWriter.setEncryption(settingsPDF.getPassword().getBytes(), owner.getBytes(), 0 , PdfWriter.ENCRYPTION_AES_128);
-            }
-            if((settingsPDF.getImageWatermark() != null && settingsPDF.getImageWatermark().getWatermark() != null) ||
-                    (settingsPDF.getTextWatermark() != null && settingsPDF.getTextWatermark().getWatermark() != null)){
-                PDFWatermark pdfWatermark = new PDFWatermark();
-                pdfWatermark.setPdfSettings(settingsPDF);
-                pdfWriter.setPageEvent(pdfWatermark);
-            }
-
-        //end of pdf settings: password, watermark
-            document.open();
-            document.setMargins(30, 30, 45, 30);
-            FontFactory.defaultEmbedding = true;
-            //for PDF instances
-            List<PdfReader> reader = new ArrayList<>();
-
-            for(MyFile myFile : myFiles.get(userId)){
-                if(myFile.getSettings().isPageBreak()){
-                    document.newPage();
+                File outputDir = new File(getUserDirPath().toString() + "/output");
+                if (!outputDir.exists()) {
+                    outputDir.mkdir();
                 }
-                Runtime runtime;
-                Process process;
-                checkTempDirectory();
-                System.out.println(myFile.getName());
-                switch(myFile.getSettings().getType()){
-                    case "image" :
-                        Image image = applyImageSettings(myFile, document);
-                        document.add(image);
-                        break;
 
-                    case "text" :
-                        document.add(Chunk.NEWLINE); // solution to image aligment TEXTWRAP
-                        String FONT = "resources/fonts/FreeSans.ttf";
+                if (!pdfFile.exists())
+                    pdfFile.createNewFile();
+                else {
+                    pdfFile.delete();
+                    pdfFile.createNewFile();
+                }
+                PdfWriter pdfWriter = null;
+                try {
+                    pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
+                } catch (FileNotFoundException fnfe) {
+                    System.out.println("Fisier in uz");
+                }
+                //pdf settings: password, watermark
+                PDFSettings settingsPDF = pdfSettingsService.getPDFSettings();
+                if (settingsPDF.getPassword() != null && !settingsPDF.getPassword().equals("")) {
+                    String owner = "Go4PDF";
+                    pdfWriter.setEncryption(settingsPDF.getPassword().getBytes(), owner.getBytes(), 0, PdfWriter.ENCRYPTION_AES_128);
+                }
+                if ((settingsPDF.getImageWatermark() != null && settingsPDF.getImageWatermark().getWatermark() != null) ||
+                        (settingsPDF.getTextWatermark() != null && settingsPDF.getTextWatermark().getWatermark() != null)) {
+                    PDFWatermark pdfWatermark = new PDFWatermark();
+                    pdfWatermark.setPdfSettings(settingsPDF);
+                    pdfWriter.setPageEvent(pdfWatermark);
+                }
+
+                //end of pdf settings: password, watermark
+                document.open();
+                document.setMargins(30, 30, 45, 30);
+                FontFactory.defaultEmbedding = true;
+                //for PDF instances
+                List<PdfReader> reader = new ArrayList<>();
+
+                for (MyFile myFile : myFiles.get(userId)) {
+                    if (myFile.getSettings().isPageBreak()) {
+                        document.newPage();
+                    }
+                    checkTempDirectory();
+                    System.out.println(myFile.getName());
+                    switch (myFile.getSettings().getType()) {
+                        case "image":
+                            Image image = applyImageSettings(myFile, document);
+                            document.add(image);
+                            break;
+
+                        case "text":
+                            document.add(Chunk.NEWLINE); // solution to image aligment TEXTWRAP
+                            String FONT = "resources/fonts/FreeSans.ttf";
 //                        Font font = FontFactory.getFont(FONT, "Cp1250", BaseFont.EMBEDDED);
 //                        BaseFont helvetica = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.EMBEDDED);
 //                        Paragraph pHeading = new Paragraph(new Chunk(new Phrase(org.apache.commons.io.FileUtils.readFileToString(myFile.getFile())).toString(), FontFactory.getFont(FontFactory.HELVETICA, 12, Font.NORMAL)));
-                        //pHeading.setAlignment(Paragraph.ALIGN_RIGHT);
-                        //document.add(pHeading);
-                        document.add(new Phrase(org.apache.commons.io.FileUtils.readFileToString(myFile.getFile()))); // I used Phrase instead of Paragraph
+                            //pHeading.setAlignment(Paragraph.ALIGN_RIGHT);
+                            //document.add(pHeading);
+                            document.add(new Phrase(org.apache.commons.io.FileUtils.readFileToString(myFile.getFile()))); // I used Phrase instead of Paragraph
 
-                        break;
-                    case "word" :
-                        String wordJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/","") + "scripts/SaveWordAsPDF.js";
-                        String workToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
-                        if (fileToPDFAndMerge(myFile, wordJsPath, workToPDFPath)){
-                            addPdf(document, pdfWriter, reader, new File(workToPDFPath));
-                        }
+                            break;
 
-                        /*PDFService MySevenPDFServiceObject = new PDFService("http://localhost:8080", "sevenpdf", "sevenpdf");
-                        MySevenPDFServiceObject.Convert(wordFile, outputPdfFile);*/
+                        case "word":
+                            String wordJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/", "") + "scripts/SaveWordAsPDF.js";
+                            String workToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
+                            if (fileToPDFAndMerge(myFile, wordJsPath, workToPDFPath)) {
+                                addPdf(document, pdfWriter, reader, new File(workToPDFPath));
+                            }
+                            break;
 
-                        break;
-                    case "excel":
-                        String excelJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/","") + "scripts/SaveExcelAsPDF.js";
-                        String excelToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
-                        if (fileToPDFAndMerge(myFile, excelJsPath, excelToPDFPath)){
-                            addPdf(document, pdfWriter, reader, new File(excelToPDFPath));
-                        }
-                        break;
-                    case "powerPoint":
-                        String pptJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/","") + "scripts/SavePowerPointAsPDF.js";
-                        String pptToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
-                        if (fileToPDFAndMerge(myFile, pptJsPath, pptToPDFPath)){
-                            addPdf(document, pdfWriter, reader, new File(pptToPDFPath));
-                        }
+                        case "excel":
+                            String excelJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/", "") + "scripts/SaveExcelAsPDF.js";
+                            String excelToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
+                            if (fileToPDFAndMerge(myFile, excelJsPath, excelToPDFPath)) {
+                                addPdf(document, pdfWriter, reader, new File(excelToPDFPath));
+                            }
+                            break;
 
-                        break;
-                    case "pdf" :
-                        addPdf(document, pdfWriter, reader, myFile);
-                        break;
+                        case "powerPoint":
+                            String pptJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/", "") + "scripts/SavePowerPointAsPDF.js";
+                            String pptToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
+                            if (fileToPDFAndMerge(myFile, pptJsPath, pptToPDFPath)) {
+                                addPdf(document, pdfWriter, reader, new File(pptToPDFPath));
+                            }
+                            break;
+
+                        case "pdf":
+                            addPdf(document, pdfWriter, reader, myFile);
+                            break;
+                    }
+                    generationProgressBar++;
                 }
-                generationProgressBar++;
-            }
-            document.close();
+                document.close();
 //            PdfReader pdfReader = new PdfReader(pdfFile.getAbsolutePath());
 //            PdfStamper stamper = new PdfStamper(pdfReader, new FileOutputStream(pdfFile.getAbsolutePath()));
 //            stamper.setEncryption(null, null, ~(PdfWriter.ALLOW_COPY | PdfWriter.ALLOW_PRINTING), PdfWriter.STANDARD_ENCRYPTION_128);
 //            stamper.close();
 //            pdfReader.close();
-            for (PdfReader readerItem : reader){
-                readerItem.close();
+                for (PdfReader readerItem : reader) {
+                    readerItem.close();
+                }
+
+                if ("email".equals(downloadMethod)) {
+                    System.out.println(existsUser.getEmail());
+                    MailSender.sendMail(existsUser.getEmail(), pdfFile.getAbsolutePath());
+                }
+                //opening the file in default application (Acrobat Reader if installed)
+                //Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + pdfFile);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            //opening the file in default application (Acrobat Reader if installed)
-            Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + pdfFile);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         LOGGER.log(Level.INFO, "PDF merge complete.");
-        return "ok";
+        return pdfFile;
     }
 
     private Image applyImageSettings(MyFile myFile, Document document) throws IOException, BadElementException {

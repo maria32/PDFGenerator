@@ -14,6 +14,205 @@ angular
 
     .run(function ($rootScope, $location, Upload,$http, NotificationService, $sessionStorage) {
 
+
+        console.log($sessionStorage.language);
+        if ($sessionStorage.language == undefined) {
+            $sessionStorage.language = 'Romanian';
+        }
+
+        $( document ).ready(function() {
+            if ($sessionStorage.language == 'Romanian') {
+                document.getElementById("language-ro").click();
+            } else if ($sessionStorage.language == 'English') {
+                document.getElementById("language-en").click();
+            }
+        });
+
+
+        $rootScope.romanianVersion = function () {
+            console.log("Romanian version");
+            $sessionStorage.language = 'Romanian';
+            $rootScope.description = {
+                part1: 'Converteste Word, Excel, PowerPoint, imagini si',
+                part2: 'multe altele',
+                part3: 'la PDF.',
+                part4: 'Go4PDF este o aplicatie gratuita. Creeaza un cont si incepe sa lucrezi. Simplu! '
+            };
+            $rootScope.description2 = 'In 4 pasi simpli iti poti crea PDF-ul dorit cu multe optiuni de setari pentru fisierele tale si nu numai.';
+            $rootScope.step = 'Pasul';
+            $rootScope.demo = {
+                here: 'Aici',
+                demo: 'Poti vedea un demo despre cum functioneaza aplicatia.',
+                before: 'Este o idee buna sa vezi acest demo inainte de crearea unui cont, sa te asiguri ca este ceea ce doresti'
+            };
+            $rootScope.uploadFiles = {
+                title: 'Incarcare fisiere',
+                description: 'Incarca fisierele dorite cu un click sau drag-and-drop.',
+                extensionsText: {
+                    part1: 'Vezi toate ',
+                    part2: 'extensiile de fisiere',
+                    part3: ' pe care le poti incarca.'
+                },
+                toKnow: 'De stiut:',
+                toKnow1: 'Marimea maxima acceptata a unui fisier este de 5MB',
+                toKnow2: 'Pentru a adauga mai multe fisiere prin click, mentine tasta Ctrl apasata in selectia de fisiere',
+                uploadStyle: 'drag-and-drop sau click',
+                uploadedFiles: 'Fisiere incarcate:',
+                uploadStatus: 'Status de incarcare'
+            };
+            $rootScope.extensions = {
+                title: 'Formate de fisiere acceptate',
+                backButton: 'Inapoi'
+            };
+            $rootScope.outputSettings = {
+                title: 'Setari PDF',
+                description: 'Adauga setari la PDF-ul rezultat: parola, watermark (text sau imagine) cu setari pentru dimensiune, pozitie si transparenta. Acest pas este optional.',
+                noPasswordSet: 'Nu ati setat o parola.',
+                noWatermarkSet: 'Nu ati setat un watermark.',
+                menu: {
+                    securityOptions: {
+                        title: 'Optiuni de securitate',
+                        password: 'Parola',
+                        lock: {
+                            title: 'Protectie',
+                            options: ['Printare', 'Copiere', 'Modificare']
+                        }
+                    },
+                    watermark: {
+                        title: 'Watermark',
+                        text: {
+                            title: 'Text'
+                        },
+                        image: {
+                            title: 'Imagine',
+                            uploadStyle: 'Drop sau click pentru incarcare',
+                            settings: {
+                                title: 'Setari watermark',
+                                position: {
+                                    title: 'Pozitie',
+                                    option1: 'Pozitie predefinita...',
+                                    option2: 'Pozitie absoluta',
+                                    sizesInfo: 'Info marime',
+                                    x0: 'x = 0 inseamna in stanga paginii.',
+                                    y0: 'y=0 inseamna in josul paginii'
+                                },
+                                scale: 'Dimensiune',
+                                opacity: 'Opacitate'
+                            }
+                        }
+                    }
+                },
+                saveButton: 'Salvare'
+            };
+            $rootScope.filesSettings = {
+                title: 'Setari fisiere',
+                description: 'Personalizeaza-ti fiecare fisier in parte. Poti specifica ce pagini sa fie luate in considerare, poti roti imagini sau sa schimbi ordinea fisierelor. Plus multe altele.'
+            };
+            $rootScope.exportToPDF = {
+                title: 'Exporta la PDF',
+                description: 'Conversie la PDF. Previzualizeaza inainte de download, downloadeaza direct sau seteaza ca PDF-ul sa iti vina pe mail.',
+                preview: 'Preview PDF rezultat',
+                hidePreview: 'Ascunde preview',
+                method: 'Metoda de download',
+                pdfName: 'Nume PDF',
+                option1: 'Download',
+                option2: 'Trimitere prin email',
+                startButton: 'START conversie'
+            };
+        };
+
+        $rootScope.englishVersion = function () {
+            console.log("English version");
+            $sessionStorage.language = 'English';
+            $rootScope.description = {
+                part1: 'Convert Word, Excel, PowerPoint, images and',
+                part2: 'more',
+                part3: 'to PDF.',
+                part4: 'Go4PDF is a free application. Create an account and start converting - that simple'
+            };
+            $rootScope.description2 = 'In 4 simple steps, you can get almost any file converted to PDF, with customizable options at your hand.';
+            $rootScope.step = 'Step';
+            $rootScope.demo = {
+                here: 'Here',
+                demo: 'you can find a demo of how the application works.',
+                before: 'You might want to check it out before creating an account, just so you know this is what you need.'
+            };
+            $rootScope.uploadFiles = {
+                title: 'Upload files',
+                description: 'Upload all of your files with a single click or drag and drop.',
+                extensionsText: {
+                    part1: 'See all ',
+                    part2: 'extensions',
+                    part3: ' that you can upload.'
+                },
+                toKnow: 'Nice to know:',
+                toKnow1: 'Maximum size per file is 5MB.',
+                toKnow2: 'To add multiple files, press the Ctrl-key.',
+                uploadStyle: 'Drop or click to upload',
+                uploadedFiles: 'Last file uploaded:',
+                uploadStatus: 'Upload Log:'
+            };
+            $rootScope.extensions = {
+                title: 'Supported format files',
+                backButton: 'Back'
+            };
+            $rootScope.outputSettings = {
+                title: 'Output Settings',
+                description: 'Personalize your PDF output. Add a password, watermark (image or text) by settings its size, position and opacity. This step is optional.',
+                noPasswordSet: 'No password set.',
+                noWatermarkSet: 'No watermark set.',
+                menu: {
+                    securityOptions: {
+                        title: 'Security options',
+                        password: 'Password',
+                        lock: {
+                            title: 'Lock',
+                            options: ['Printing', 'Copying', 'Modifying']
+                        }
+                    },
+                    watermark: {
+                        title: 'Watermark',
+                        text: {
+                            title: 'Text'
+                        },
+                        image: {
+                            title: 'Image',
+                            uploadStyle: 'Drop or click to upload',
+                            settings: {
+                                title: 'Watermark Settings',
+                                position: {
+                                    title: 'Position',
+                                    option1: 'Set position from...',
+                                    option2: 'Set absolute position',
+                                    sizesInfo: 'Sizes info',
+                                    x0: 'x = 0 means left of page.',
+                                    y0: 'y=0 means bottom of page.'
+                                },
+                                scale: 'Scale',
+                                opacity: 'Opacity'
+                            }
+                        }
+                    }
+                },
+                saveButton: 'Save'
+            };
+            $rootScope.filesSettings = {
+                title: 'Files settings',
+                description: 'Customize each of your files before conversion. You can select specific files from a document, rotate images, or change order of files after upload.'
+            };
+            $rootScope.exportToPDF = {
+                title: 'Export to PDF',
+                description: 'Conversion to PDF is a click away. Preview the output before conversion, download directly or have your PDF sent to your email address.',
+                preview: 'Preview resulted PDF',
+                hidePreview: 'Hide preview',
+                method: 'How to download PDF',
+                pdfName: 'Name your pdf here',
+                option1: 'Download',
+                option2: 'Send to my email',
+                startButton: 'START conversion'
+            };
+        };
+
         $rootScope.user = $sessionStorage.user;
         if ($sessionStorage.user == undefined) {
             console.log("go to login page.");
@@ -97,8 +296,7 @@ angular
         };
 
 
-        $rootScope.showProgressCircle = false;
-        $rootScope.progress = 0;
+
 
 //        $rootScope.username = null;
 
@@ -109,45 +307,6 @@ angular
         //     }
         //
         // }
-
-        function getProgressBarStatus(){
-            $http({
-                method: 'GET',
-                url: '/convert/generatePDF/progress-bar'
-            }).then(function successCallback(response) {
-                $rootScope.progress = parseInt((100 / $rootScope.filesNo) * response.data);
-                console.log(response.data + " " + $rootScope.progress);
-                $('#my-progress')
-                    .css('width', $rootScope.progress+'%')
-                    .attr('aria-valuenow', $rootScope.progress);
-                if(response.data == $rootScope.filesNo) {
-                    clearTimeout($rootScope.progressBarStatus);
-                    $rootScope.showProgressCircle = false;
-                }
-                return response.data;
-            });
-        }
-
-        $rootScope.generatePDF = function () {
-            if ($rootScope.filesNo > 0) {
-                $rootScope.showProgressCircle = true;
-                Upload.upload({
-                    method: 'GET',
-                    // headers: {'Content-Type': 'application/json'},
-                    url: '/convert/' + $sessionStorage.user.id + '/generatePDF'
-                }).then(function (response) {
-                    console.log("xxx" + response);
-                    if (response.data != '') {
-
-                    } else {
-                        console.log('GeneratePDF ERROR');
-                    }
-                });
-                $rootScope.progressBarStatus = setInterval(getProgressBarStatus, 500);
-            }else {
-                alert("No files to convert! Make sure you clicked 'Step 3' before converting.");
-            }
-        };
 
 
         $rootScope.positions = ['TOP_LEFT', 'TOP_CENTER', 'TOP_RIGHT', 'MIDDLE_LEFT', 'CENTER', 'MIDDLE_RIGHT', 'BOTTOM_LEFT', 'BOTTOM_CENTER', 'BOTTOM_RIGHT'];
@@ -168,6 +327,9 @@ angular
         }).when('/settings', {
             templateUrl: 'template/files-settings.html',
             controller: 'FilesSettingsCtrl'
+        }).when('/export-to-pdf', {
+            templateUrl: 'template/export-to-pdf.html',
+            controller: 'ExportToPDFCtrl'
 
         }).when('/image-settings', {
             templateUrl: 'template/settings/image.html'
@@ -179,6 +341,8 @@ angular
             templateUrl: 'template/extensions.html'
         }).when('/demo-instructions', {
             templateUrl: 'template/demo-instructions.html'
+        }).when('/preview', {
+            templateUrl: 'template/GeneratedPDF.pdf'
         }).otherwise({
             redirectTo: '/upload'
         });

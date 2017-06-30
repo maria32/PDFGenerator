@@ -96,6 +96,7 @@ angular.module('PDF')
                 $scope.postPDFSettings();
             }
             console.log($scope.pdfSettings);
-        }
+        };
+
 
     });

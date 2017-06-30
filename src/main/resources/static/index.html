@@ -45,14 +45,19 @@
     <div class="navbar header">
         <div class="row">
             <a class="my-logo" style="max-height:100px;"><img src="logo.png" width="30%"></a>
-            <div class="right" ng-show="user == undefined">
-                <a class="authenticate" data-toggle="modal" data-target="#signInModal">Sign in</a>
-                <a class="authenticate stand-out-white" data-toggle="modal" data-target="#signUpModal">Sign up</a>
+            <div class="right" >
+                <div ng-show="user == undefined">
+                    <a class="authenticate" data-toggle="modal" data-target="#signInModal">Sign in</a>
+                    <a class="authenticate stand-out-white" data-toggle="modal" data-target="#signUpModal">Sign up</a>
+                </div>
+                <div ng-show="user != undefined">
+                    {{user.username}}
+                    <a class="authenticate stand-out-white" aria-hidden="true" ng-click="logout()"><span class="glyphicon glyphicon-off" aria-hidden="true"></span></a>
+                </div>
+                <a id="language-ro" href="" ng-click="romanianVersion()"><img src="images/language/romania.gif"></a>
+                <a id="language-en" href="" ng-click="englishVersion()"><img src="images/language/usa.gif"></a>
             </div>
-            <div class="right" ng-show="user != undefined">
-                {{user.username}}
-                <a class="authenticate stand-out-white" aria-hidden="true" ng-click="logout()">Logout</a>
-            </div>
+
         </div>
     </div>
 
@@ -132,39 +137,39 @@
         </div>
     </div>
 
-    <div ng-show="user != null">
+    <div id="menu" ng-show="user != null">
         <div>
             <table>
                 <tr>
-                    <th class="step">Step 1</th>
-                    <th class="step">Step 2</th>
-                    <th class="step">Step 3</th>
-                    <th class="step">Step 4</th>
+                    <th class="step">{{step}} 1</th>
+                    <th class="step">{{step}} 2</th>
+                    <th class="step">{{step}} 3</th>
+                    <th class="step">{{step}} 4</th>
                 </tr>
                 <tr>
                     <td>
                         <a href="#!/upload" target="_self" class="my-btn my-btn-round my-btn-upload">
                             <i class="icon glyphicon glyphicon-upload"></i>
-                            <p>Upload files</p>
+                            <p>{{uploadFiles.title}}</p>
                         </a>
                     </td>
                     <td>
                         <a href="#!/pdf-settings" class="my-btn my-btn-round my-btn-output">
                             <i class="icon glyphicon glyphicon-file"></i>
-                            <p>Output settings<br><b>(optional)</b></p>
+                            <p>{{outputSettings.title}}<br><b>(optional)</b></p>
                         </a>
                     </td>
                     <td>
                         <a href="#!/settings" class="my-btn my-btn-round my-btn-settings">
                             <i class="icon glyphicon glyphicon-duplicate"></i>
-                            <p>Files settings</p>
+                            <p>{{filesSettings.title}}</p>
                             <span class="badge badge-files">{{filesNo}}</span>
                         </a>
                     </td>
                     <td>
-                        <a href="" id="generate-PDF-button" class="my-btn my-btn-round my-btn-export" ng-click="generatePDF()">
+                        <a href="#!/export-to-pdf" id="generate-PDF-button" class="my-btn my-btn-round my-btn-export">
                             <i class="icon glyphicon glyphicon-floppy-save"></i>
-                            <p>Export to PDF</p>
+                            <p>{{exportToPDF.title}}</p>
                         </a>
                     </td>
                 </tr>
@@ -191,12 +196,12 @@
     <div ng-show="user == undefined">
         <div>
             <div class="center">
-                <img src="image-description.png" style="width:70%; max-width: 400px;">
+                <img src="image-description.png" style="width:100%; max-width: 679px;">
             </div>
 
             <div class="app-description">
-                Convert Word, Excel, PowerPoint, images and <a href="#!/extensions"><span class="badge">more</span></a> to PDF.<br>
-                Go4PDF is a free application. Create an account and start converting - that simple &#9786;.
+                {{description.part1}} <a href="#!/extensions"><span class="badge">{{description.part2}}</span></a> {{description.part3}}<br>
+                {{description.part4}} &#9786;.
             </div>
 
             <!--<div class="app-description">
@@ -205,43 +210,41 @@
                 If you wish for extra capabilities, tell us about it. We'll get it done.
             </div>-->
             <br>
-            <h4>
-                In 4 simple steps, you can get almost any file converted to PDF, with customizable options at your hand.
-            </h4>
+            <h4>{{description2}}</h4>
             <br>
             <div class="center">
                 <div class="row">
                     <div class="col-xs-6 col-sm-3">
-                        <p class="step">Step 1</p>
+                        <p class="step">{{step}} 1</p>
                         <a class="my-btn my-btn-round my-btn-upload">
                             <i class="icon glyphicon glyphicon-upload"></i>
-                            <p>Upload files</p>
+                            <p>{{uploadFiles.title}}</p>
                         </a>
-                        <p>Upload all of your files with a single click or drag and drop.</p>
+                        <p>{{uploadFiles.description}}</p>
                     </div>
                     <div class="col-xs-6 col-sm-3">
-                        <p class="step">Step 2</p>
+                        <p class="step">{{step}} 2</p>
                         <a class="my-btn my-btn-round my-btn-output">
                             <i class="icon glyphicon glyphicon-file"></i>
-                            <p>Output settings</p>
+                            <p>{{outputSettings.title}}</p>
                         </a>
-                        <p>Personalize your PDF output. Add a password, watermark (image or text) by settings its size, position and opacity.<br>This step is optional.</p>
+                        <p>{{outputSettings.description}}</p>
                     </div>
                     <div class="col-xs-6 col-sm-3">
-                        <p class="step">Step 3</p>
+                        <p class="step">{{step}} 3</p>
                         <a class="my-btn my-btn-round my-btn-settings">
                             <i class="icon glyphicon glyphicon-duplicate"></i>
-                            <p>Files settings</p>
+                            <p>{{filesSettings.title}}</p>
                         </a>
-                        <p>Customize each of your files before conversion. You can select specific files from a document, rotate images, or change order of files after upload.</p>
+                        <p>{{filesSettings.description}}</p>
                     </div>
                     <div class="col-xs-6 col-sm-3">
-                        <p class="step">Step 4</p>
+                        <p class="step">{{step}} 4</p>
                         <a class="my-btn my-btn-round my-btn-export">
                             <i class="icon glyphicon glyphicon-floppy-save"></i>
-                            <p>Export to PDF</p>
+                            <p>{{exportToPDF.title}}</p>
                         </a>
-                        <p>Conversion to PDF is a click away. Never simpler.</p>
+                        <p>{{exportToPDF.description}}</p>
                     </div>
 
                 </div>
@@ -258,10 +261,11 @@
             <script src="js/controller/UploadCtrl.js"></script>
             <script src="js/controller/PDFSettingsCtrl.js"></script>
             <script src="js/controller/FilesSettingsCtrl.js"></script>
+            <script src="js/controller/ExportToPDFCtrl.js"></script>
             <script src="js/service/NotificationService.js"></script>
         </div>
         <div class="app-description" id="footer">
-            <a class="authenticate stand-out-white" href="#!/demo-instructions">Here</a> you can find a demo of how the application works. You might want to check it out before creating an account, just so you know this is what you need.
+            <a class="authenticate stand-out-white" href="#!/demo-instructions">{{demo.here}}</a> {{demo.demo}} <span ng-show="user == undefined">{{demo.before}}</span>
         </div>
 
     </div>

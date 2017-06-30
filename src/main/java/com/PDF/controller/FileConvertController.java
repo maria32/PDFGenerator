@@ -2,11 +2,19 @@ package com.PDF.controller;
 
 import com.PDF.model.MyFile;
 import com.PDF.service.StorageService;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -36,10 +44,23 @@ public class FileConvertController {
         return storageService.deleteFile(userId, name, extension);
     }
 
-    @RequestMapping(value="/{userId}/generatePDF", method = RequestMethod.GET)
+    @RequestMapping(value="/{userId}/generatePDF/{downloadMethod}", method = RequestMethod.GET, produces = "application/pdf")
     @ResponseBody
-    public String generatePDF(@PathVariable("userId") Long userId) {
-        return storageService.generatePDF(userId);
+    public ResponseEntity<byte[]> generatePDF(@PathVariable("userId") Long userId,
+                                              @PathVariable("downloadMethod") String downloadMethod) {
+        File file = storageService.generatePDF(userId, downloadMethod);
+        try {
+            byte[] contents = IOUtils.toByteArray(new FileInputStream(file));
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/pdf"));
+            String filename = "test.pdf";
+            headers.setContentDispositionFormData(filename, filename);
+            ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(contents, headers, HttpStatus.OK);
+            return response;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @RequestMapping(value="/generatePDF/progress-bar", method = RequestMethod.GET)

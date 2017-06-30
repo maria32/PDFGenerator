@@ -16,13 +16,18 @@ body {
 .header {
     padding: 20px;
     font-size: 20px;
-    background-color: #FFF066;
     vertical-align: middle;
-
+    border-bottom: 2px solid #BEF27E !important;
+    margin-bottom: 0 !important;
 }
 
 #footer {
     bottom: -700px;
+}
+
+#menu {
+    padding-top: 20px;
+    background-color: #F0F8FF;
 }
 
 .app-description {
@@ -43,6 +48,19 @@ body {
 
 .right {
     float:right;
+}
+
+.pdf-export {
+    float: left;
+    width: 100%;
+}
+
+#pdf-viewer {
+    float: right;
+    width: 100%;
+    margin-right: 0;
+    max-width:700px;
+    height:900px;
 }
 
 .stand-out-white {
@@ -360,6 +378,22 @@ body {
     color:white !important;
 }
 .my-btn-export:active {
+    background-color:#94E234;
+    color:white !important;
+    top : 5px;
+    position: relative;
+}
+
+.my-btn-green {
+    background: #BEF27E;
+    border-color: #94E234;
+}
+
+.my-btn-green:hover {
+    background-color:#94E234;
+    color:white !important;
+}
+.my-btn-green:active {
     background-color:#94E234;
     color:white !important;
     top : 5px;

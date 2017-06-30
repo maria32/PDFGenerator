@@ -1,0 +1,39 @@
+<div class="my-content-container pdf-export">
+    <p class="popover-title my-title">{{exportToPDF.title}}</p>
+    <br>
+    <div>
+        <a href="" class="btn my-btn-green" ng-click="generatePDFPreview()">
+            <span ng-show="preview == false" >{{exportToPDF.preview}}</span>
+            <span ng-show="preview == true" >{{exportToPDF.hidePreview}}</span>
+        </a> (optional)
+    </div>
+    <br>
+    <div class="my-content-container">
+        <p class="popover-title my-title">{{exportToPDF.method}}</p>
+        <br>
+        <input type="text" name="pdf-name" placeholder="{{exportToPDF.pdfName}}"><br>
+        <input type="radio" name="export_to" value="download" ng-model="exportAs"/> {{exportToPDF.option1}}<br>
+        <input type="radio" name="export_to" value="email" ng-model="exportAs"/> {{exportToPDF.option2}}
+        <br>
+        <span class="text-primary">{{conversionMessage}}</span>
+        <br>
+        <div>
+            <a href="" class="btn my-btn-green" ng-click="generatePDF()">{{exportToPDF.startButton}}</a>
+        </div>
+    </div>
+
+    <!--<link href="../library/pdfjs-viewer/pdf.js-viewer/viewer.css" rel="stylesheet">-->
+    <!--<pdfjs-viewer src="#!/preview" scale="scale"-->
+                  <!--download="true" print="false" open="false"-->
+                  <!--on-init="onInit()" on-page-load="onPageLoad(page)">-->
+    <!--</pdfjs-viewer>-->
+
+
+</div>
+
+<div ng-show="preview == true">
+    <object id="pdf-viewer" data="{{content}}" type="application/pdf"></object>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+</div>
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
