@@ -15,6 +15,7 @@ import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfImportedPage;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.tool.xml.XMLWorkerHelper;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -296,7 +297,7 @@ public class FileSystemStorageService implements StorageService {
                 try {
                     pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
                 } catch (FileNotFoundException fnfe) {
-                    System.out.println("Fisier in uz");
+                    System.out.println("GenartedPDF.pdf: Fisier in uz");
                 }
                 //pdf settings: password, watermark
                 PDFSettings settingsPDF = pdfSettingsService.getPDFSettings();
@@ -342,17 +343,32 @@ public class FileSystemStorageService implements StorageService {
 
                             break;
 
+                        case "html":
+                            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(myFile.getFile())));
+                            String line = null;
+
+                            StringBuilder htmlString = new StringBuilder();
+                            while((line = in.readLine()) != null) {
+                                htmlString.append(line);
+                            }
+
+                            InputStream is = new ByteArrayInputStream(htmlString.toString().getBytes());
+                            XMLWorkerHelper.getInstance().parseXHtml(pdfWriter, document, is);
+                            break;
+
                         case "word":
                             String wordJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/", "") + "scripts/SaveWordAsPDF.js";
-                            String workToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
-                            if (fileToPDFAndMerge(myFile, wordJsPath, workToPDFPath)) {
-                                addPdf(document, pdfWriter, reader, new File(workToPDFPath));
+                            String wordToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
+                            System.out.println(wordToPDFPath);
+                            if (fileToPDFAndMerge(myFile, wordJsPath, wordToPDFPath)) {
+                                addPdf(document, pdfWriter, reader, new File(wordToPDFPath));
                             }
                             break;
 
                         case "excel":
                             String excelJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/", "") + "scripts/SaveExcelAsPDF.js";
-                            String excelToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
+                            String excelToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + myFile.getExtension() + ".pdf";
+                            System.out.println(excelToPDFPath);
                             if (fileToPDFAndMerge(myFile, excelJsPath, excelToPDFPath)) {
                                 addPdf(document, pdfWriter, reader, new File(excelToPDFPath));
                             }
@@ -361,6 +377,7 @@ public class FileSystemStorageService implements StorageService {
                         case "powerPoint":
                             String pptJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/", "") + "scripts/SavePowerPointAsPDF.js";
                             String pptToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
+                            System.out.println(pptToPDFPath);
                             if (fileToPDFAndMerge(myFile, pptJsPath, pptToPDFPath)) {
                                 addPdf(document, pdfWriter, reader, new File(pptToPDFPath));
                             }
@@ -501,26 +518,30 @@ public class FileSystemStorageService implements StorageService {
     }
 
     private boolean fileToPDFAndMerge(MyFile myFile, String jsPath, String fileToPDFPath) throws IOException, InterruptedException{
-        if (! new File(fileToPDFPath).exists()) {
-            Runtime runtime = Runtime.getRuntime();
-            Process process = runtime.exec("cscript.exe //nologo " + jsPath + " " + myFile.getFile().getAbsolutePath());
+        File fileToPDFFile = new File(fileToPDFPath);
+        if (fileToPDFFile.exists()) {
+            fileToPDFFile.deleteOnExit();
+            Thread.sleep(1000);
+        }
+        Runtime runtime = Runtime.getRuntime();
+        Process process = runtime.exec("cscript.exe //nologo " + jsPath + " " + myFile.getFile().getAbsolutePath());
 
-            StringBuilder processOutput = new StringBuilder();
-            try (BufferedReader processOutputReader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));) {
-                String outputLine;
-                while ((outputLine = processOutputReader.readLine()) != null) {
-                    processOutput.append(outputLine).append(System.lineSeparator());
-                }
-                process.waitFor();
-                if (processOutput.indexOf("Done.") != -1) {
-                    File ppt = new File(fileToPDFPath);
-                } else {
-                    System.out.println("Eroare conversie ppt");
-                    return false;
-                }
+        StringBuilder processOutput = new StringBuilder();
+        try (BufferedReader processOutputReader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()));) {
+            String outputLine;
+            while ((outputLine = processOutputReader.readLine()) != null) {
+                processOutput.append(outputLine).append(System.lineSeparator());
+            }
+            process.waitFor();
+            if (processOutput.indexOf("Done.") != -1) {
+                File ppt = new File(fileToPDFPath);
+            } else {
+                System.out.println("Eroare conversie fisier");
+                return false;
             }
         }
+
         return true;
     }
 

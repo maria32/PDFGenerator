@@ -21,10 +21,11 @@ public class MyFile<S extends Settings> {
     private static final AtomicInteger count = new AtomicInteger(0);
     public static final List<String> image = Arrays.asList("jpg", "png", "bmp");
     public static final List<String> word = Arrays.asList("doc", "docx", "odt", "rtf");
-    public static final List<String> excel = Arrays.asList("xls", "xlsx");
+    public static final List<String> excel = Arrays.asList("xls", "xlsx", "xla", "xlt", "ods", "csv", "xlsb");
     public static final List<String> powerPoint = Arrays.asList("ppt", "pptx");
     public static final List<String> text = Arrays.asList("txt", "rtf");
     public static final List<String> pdf = Arrays.asList("pdf");
+    public static final List<String> html = Arrays.asList("html");
 
     private Integer id;
     private String name;
@@ -45,8 +46,10 @@ public class MyFile<S extends Settings> {
         Settings settings;
         if(image.contains(extension)){
             settings = new SettingsImage(file);
-        }else if(text.contains(extension)){
+        }else if(text.contains(extension)) {
             settings = new SettingsText();
+        } else if (html.contains(extension)){
+            settings = new SettingsHtml();
         } else if(word.contains(extension)) {
             settings = new SettingsWord();
         } else if(excel.contains(extension)) {

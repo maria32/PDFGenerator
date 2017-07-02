@@ -3,7 +3,7 @@ var excelPath = WScript.Arguments(0);
 var excelParentFolder = fso.GetParentFolderName(excelPath);
 excelPath = fso.GetAbsolutePathName(excelPath);
 
-var pdfPath = excelParentFolder + "/temp/" + fso.getFileName(excelPath).replace(/\.xls[^.]*$/, ".pdf");
+var pdfPath = excelParentFolder + "/temp/" + fso.getFileName(excelPath).replace(/\.(xls|xlsx|xlt|xla|ods|xlsb|csv)$/, excelPath.split('.').pop() + ".pdf");
 var objExcel = null;
 
 try

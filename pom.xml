@@ -77,6 +77,12 @@
             <version>1.56</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.itextpdf.tool</groupId>
+            <artifactId>xmlworker</artifactId>
+            <version>5.5.7</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/com.documents4j/documents4j-api -->
         <dependency>
             <groupId>com.documents4j</groupId>

@@ -72,6 +72,8 @@ public class MyFileDeserializer extends StdDeserializer<MyFile>{
         }else if(text.contains(extension)) {
             //fields to be added
             settings = new SettingsText();
+        } else if (html.contains(extension)) {
+            settings = new SettingsHtml();
         } else if(word.contains(extension)) {
             //fields to be added
             settings = new SettingsWord();
