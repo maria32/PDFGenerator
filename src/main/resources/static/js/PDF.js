@@ -214,15 +214,44 @@ angular
         };
 
         $rootScope.user = $sessionStorage.user;
-        if ($sessionStorage.user == undefined) {
-            console.log("go to login page.");
-            console.log($sessionStorage.user);
+
+        if (getCookie("remember-me") == "") {
+            $rootScope.user = undefined;
             $location.path("/login");
+        } else {
+            $http({
+                method: 'GET',
+                url: '/user/' + getCookie("remember-me"),
+                headers: {'Content-Type': 'application/json'}
+            }).then(function successCallback(response) {
+                if (response.data != null && response.data != "") {
+                    $rootScope.user = response.data;
+                    $sessionStorage.user = response.data;
+                } else {
+                    $rootScope.user = undefined;
+                    $location.path("/login");
+                }
+            });
         }
 
         $rootScope.filesNo = $sessionStorage.filesNo;
 
         var headers = $rootScope.credentials ? {authorization : "Basic " + btoa($rootScope.credentials.username + ":" + $rootScope.credentials.password)} : {};
+
+        function getCookie(cname) {
+            var name = cname + "=";
+            var ca = document.cookie.split(';');
+            for(var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        };
 
         $rootScope.login = function () {
             if ($rootScope.credentials.username != undefined && $rootScope.credentials.password != undefined) {
@@ -287,12 +316,18 @@ angular
         };
 
         $rootScope.logout = function () {
-            $sessionStorage.user = undefined;
-            $rootScope.user = undefined;
-            $sessionStorage.filesNo = undefined;
-            $rootScope.filesNo = undefined;
-            $location.path('/login');
-            console.log("User logged out.");
+            $http({
+                method: 'GET',
+                url: '/logout/' + getCookie("remember-me"),
+                headers: {'Content-Type': 'application/json'},
+            }).then(function successCallback(response) {
+                $sessionStorage.user = undefined;
+                $rootScope.user = undefined;
+                $sessionStorage.filesNo = undefined;
+                $rootScope.filesNo = undefined;
+                $location.path('/login');
+                console.log("User logged out.");
+            });
         };
 
 

@@ -35,6 +35,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User getOne(String username) {
+        User user = username == null ? null : userRepository.findByUsername(username);
+        if(user == null)
+            throw new ResourceNotFoundException();
+        return user;
+    }
+
+    @Override
     public void delete(Long id) {
         userRepository.delete(userRepository.findOne(id));
     }

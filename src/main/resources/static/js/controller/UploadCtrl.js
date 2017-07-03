@@ -5,11 +5,42 @@
 //inject angular file upload directives and services.
 // var app = angular.module('fileUpload', ['ngFileUpload']);
 angular.module('PDF')
-    .controller('UploadCtrl', function ($scope, $rootScope, $sessionStorage, $location, Upload, $timeout, NotificationService) {
+    .controller('UploadCtrl', function ($scope, $rootScope, $sessionStorage, $location, $http, Upload, $timeout, NotificationService) {
 
-        if($sessionStorage.user == undefined){
+        if (getCookie("remember-me") == "") {
+            $rootScope.user = undefined;
             $location.path("/login");
+        } else {
+            $http({
+                method: 'GET',
+                url: '/user/' + getCookie("remember-me"),
+                headers: {'Content-Type': 'application/json'}
+            }).then(function successCallback(response) {
+                if (response.data != null && response.data != "") {
+                    $rootScope.user = response.data;
+                    $sessionStorage.user = response.data;
+                } else {
+                    $rootScope.user = undefined;
+                    $location.path("/login");
+                }
+            });
         }
+
+        function getCookie(cname) {
+            var name = cname + "=";
+            var ca = document.cookie.split(';');
+            for(var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        };
+
 
         $scope.$watch('files', function () {
             $scope.upload($scope.files);

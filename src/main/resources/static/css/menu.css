@@ -18,7 +18,7 @@ body {
     font-size: 20px;
     vertical-align: middle;
     border-bottom: 2px solid #BEF27E !important;
-    margin-bottom: 0px
+    margin-bottom: 0px !important;
 }
 
 #footer {
@@ -26,6 +26,7 @@ body {
 }
 
 #menu {
+    padding-top: 10px;
     background-color: #F0F8FF;
 }
 

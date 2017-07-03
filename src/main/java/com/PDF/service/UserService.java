@@ -11,6 +11,8 @@ public interface UserService {
 
     User getOne(Long id);
 
+    User getOne(String username);
+
     void delete(Long id);
 
     User checkCredentials(User user);

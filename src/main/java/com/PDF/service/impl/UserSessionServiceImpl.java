@@ -2,7 +2,6 @@ package com.PDF.service.impl;
 
 import com.PDF.exception.ResourceAlreadyExistsException;
 import com.PDF.model.User;
-import com.PDF.security.UserTokenState;
 import com.PDF.service.UserService;
 import com.PDF.service.UserSessionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,36 +39,9 @@ public class UserSessionServiceImpl implements UserSessionService {
         if (user != null){
             SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
             username = user.getUsername();
-            user.setPassword("");
+            //user.setPassword("");
         }
-
-
-        //return user == null ? null : user;
-
-        String jws = Jwts.builder()
-                .setIssuer("app_name")
-                .setSubject("user2")
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 600_000))
-                .signWith(SignatureAlgorithm.HS512, "queenvictoria")
-                .compact();
-
-        Cookie authCookie = new Cookie("my-cookie-Go4PDF", jws);
-        authCookie.setComment("user authentication. keep session");
-        authCookie.setPath("/");
-        authCookie.setHttpOnly(true);
-        authCookie.setMaxAge(600);
-        System.out.println(authCookie.getValue());
-
-        UserTokenState userTokenState = new UserTokenState(jws, 600);
-        String jwtResponse = new ObjectMapper().writeValueAsString(userTokenState);
-
-        response.addCookie(authCookie);
-        response.setContentType("application/json");
-        //response.getWriter().write(jwtResponse);
-
         return user == null ? null : user;
-
     }
 
     public User checkUserInDB(User credentials) {
