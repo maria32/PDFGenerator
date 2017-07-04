@@ -30,7 +30,7 @@ public class MailSender {
         mailProperties.put("mail.smtp.port", "587");
     }
 
-    public static boolean sendMail(String receiverEmail, String attachmentPath){
+    public static boolean sendMail(String receiverEmail, String attachmentPath, String pdfName){
         
         MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
         mc.addMailcap("text/html;; x-java-content-handler=com.sun.mail.handlers.text_html");
@@ -55,11 +55,11 @@ public class MailSender {
             mailMessage.addRecipients(Message.RecipientType.TO, recipientAddress);
             mailMessage.setSubject("PDF conversion");
             BodyPart messageBodyPart = new MimeBodyPart();
-            messageBodyPart.setText("Hello,/n/n" +
-                    "You requested a conversion from Go4PDF./n" +
-                    "Thank you for using our services./n/n" +
-                    "If you need to get into contact with us, please do not hesitate to reach us at inquiry@Go4PDF.com/n" +
-                    "Yours sincerely,/nGo4PDF Team.");
+            messageBodyPart.setText("Hello, You requested a conversion from Go4PDF." +
+                    "Thank you for using our services." +
+                    "If you need to get into contact with us, please do not hesitate to reach us at inquiry@Go4PDF.com" +
+                    "Yours sincerely," +
+                    "Go4PDF Team.");
 
             Multipart multipartMessage = new MimeMultipart();
             multipartMessage.addBodyPart(messageBodyPart);
@@ -73,7 +73,7 @@ public class MailSender {
                 e.printStackTrace();
             }
             messageBodyPart.setDataHandler(new DataHandler(attachment));
-            messageBodyPart.setFileName(Paths.get(attachmentPath).getFileName().toString());
+            messageBodyPart.setFileName(pdfName);
             multipartMessage.addBodyPart(messageBodyPart);
             mailMessage.setContent(multipartMessage);
 

@@ -54,7 +54,7 @@ public class PDFSettingsDeserializer extends StdDeserializer<PDFSettings> {
             pdfSettings.setTextWatermark(textWatermark);
         }
 
-        if(node.get("imageWatermark").isObject()) {
+        if(node.get("imageWatermark").isObject() && node.get("imageWatermark").has("fileName")) {
             JsonNode nodeImageWatermark = node.get("imageWatermark");
             ImageWatermark imageWatermark = new ImageWatermark();
             if (!nodeImageWatermark.get("watermark").isNull()) {

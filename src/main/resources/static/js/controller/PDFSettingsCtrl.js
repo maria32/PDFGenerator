@@ -54,13 +54,13 @@ angular.module('PDF')
                 }
                 console.log($scope.pdfSettings);
             } else {
-                NotificationService.error("PDF settings not retrieved.");
+                NotificationService.error($sessionStorage.language == 'Romanian' ? "Setari PDF neprimite de la server" : "PDF settings not retrieved.");
             }
         });
 
         $(function () {
             $('[data-toggle="popover"]').popover()
-        })
+        });
 
 
         $("#image-position").imagepicker();
@@ -91,13 +91,13 @@ angular.module('PDF')
                 url: '/pdf-settings/save/',
                 data: JSON.stringify($scope.pdfSettings),
                 success: function(result){
-                    NotificationService.success("PDF Settings saved.");
+                    NotificationService.success($sessionStorage.language == 'Romanian' ? "Setari PDF rezultat salvate." : "PDF Settings saved.");
                     if(result != "") {
                         console.log(result.data);
                     }
                 },
                 error: function(e) {
-                    NotificationService.error("PDF Settings not saved.");
+                    NotificationService.error($sessionStorage.language == 'Romanian' ? "Setari PDF rezultat nesalvate!" : "PDF Settings not saved.");
                 }
             });
         };
@@ -118,7 +118,7 @@ angular.module('PDF')
                         $scope.pdfSettings.imageWatermark.height = response.data.height;
                         $scope.fileName = null;
                     } else {
-                        NotificationService.error('Failed to upload file');
+                        NotificationService.error($sessionStorage.language == 'Romanian' ? "Eroare incarcare fisier" : 'Failed to upload file');
                     }
                     $scope.postPDFSettings();
                 });

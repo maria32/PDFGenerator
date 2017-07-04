@@ -106,7 +106,38 @@ angular
             };
             $rootScope.filesSettings = {
                 title: 'Setari fisiere',
-                description: 'Personalizeaza-ti fiecare fisier in parte. Poti specifica ce pagini sa fie luate in considerare, poti roti imagini sau sa schimbi ordinea fisierelor. Plus multe altele.'
+                description: 'Personalizeaza-ti fiecare fisier in parte. Poti specifica ce pagini sa fie luate in considerare, poti roti imagini sau sa schimbi ordinea fisierelor. Plus multe altele.',
+                newPage: 'Incepe pe pagina noua',
+                saveButton: 'Salvare',
+                noFilesUploaded: 'Nu aveti fisiere incarcate.',
+                image: {
+                    position: {
+                        title: 'Pozitie',
+                        wrappingStyle: 'Stil invaluire',
+                        option1: 'Pozitie predefinita...',
+                        option2: 'Pozitie absoluta',
+                        sizesInfo: 'Info marime',
+                        x0: 'x = 0 inseamna in stanga paginii.',
+                        y0: 'y=0 inseamna in josul paginii',
+                        positions: ['Sus stanga', 'Sus mijloc', 'Sus dreapta', 'Centru stanga', 'Centru', 'Centru dreapta', 'Jos stanga', 'Jos centru', 'Jos dreapta'],
+                        positionsWithinText: ["Neprecizat", "Stanga", "Mijloc", "Dreapta", "Pe dedesubt"]
+                    },
+                    scale: {
+                        title: 'Dimensiune',
+                        fitToPage: 'La dimensiunea paginii',
+                        pageMargins: 'Margini la pagina',
+                        scaleByPercentage: 'Scalare procentuala'
+                    } ,
+                    rotate: 'Rotire'
+                },
+                pdf: {
+                    pages: 'pagini',
+                    selectPages: 'Selectare pagini',
+                    message: "Campul 'Selectare pagini' este gol. Pentru selectarea tuturor paginilor scrie 'All', sau specifica paginile dorite (ex.: '1-2,4')"
+                },
+                ppt: {
+                    message: "Conversia la PDF poate dura timp (pana la un minut sau mai mult)."
+                }
             };
             $rootScope.exportToPDF = {
                 title: 'Exporta la PDF',
@@ -198,7 +229,39 @@ angular
             };
             $rootScope.filesSettings = {
                 title: 'Files settings',
-                description: 'Customize each of your files before conversion. You can select specific files from a document, rotate images, or change order of files after upload.'
+                description: 'Customize each of your files before conversion. You can select specific files from a document, rotate images, or change order of files after upload.',
+                newPage: 'Start on a new page',
+                saveButton: 'Save changes',
+                noFilesUploaded: 'No files uploaded.',
+                image: {
+                    position: {
+                        title: 'Position',
+                        wrappingStyle: 'Wrapping style',
+                        option1: 'Set position from...',
+                        option2: 'Set absolute position',
+                        sizesInfo: 'Sizes info',
+                        x0: 'x = 0 means left of page.',
+                        y0: 'y=0 means bottom of page.',
+                        positions: ['Top left', 'Top center', 'Top right', 'Middle left', 'Center', 'Middle right', 'Bottom left', 'Bottom center', 'Bottom right'],
+                        positionsWithinText: ["None", "Left", "Middle", "Right", "Underlying"]
+                    },
+                    scale: {
+                        title: 'Scale',
+                        fitToPage: 'Fit to Page',
+                        pageMargins: 'Page margins',
+                        scaleByPercentage: 'Scale by percentage'
+                    } ,
+                    rotate: 'Rotate'
+                },
+                pdf: {
+                    pages: 'pages',
+                    selectPages: 'Select pages',
+                    message: "'Select pages' field is empty. If you want all pages, please insert 'All', else insert the pages you want to include (eg.: '1-2,4')"
+                },
+                ppt: {
+                    message: "Conversion to PDF might take a while (up to a minute or more)."
+                }
+
             };
             $rootScope.exportToPDF = {
                 title: 'Export to PDF',
@@ -235,6 +298,8 @@ angular
         }
 
         $rootScope.filesNo = $sessionStorage.filesNo;
+        $rootScope.positions = ['TOP_LEFT', 'TOP_CENTER', 'TOP_RIGHT', 'MIDDLE_LEFT', 'CENTER', 'MIDDLE_RIGHT', 'BOTTOM_LEFT', 'BOTTOM_CENTER', 'BOTTOM_RIGHT'];
+        $rootScope.positionsWithinText = ["None", "Left", "Middle", "Right", "Underlying"];
 
         var headers = $rootScope.credentials ? {authorization : "Basic " + btoa($rootScope.credentials.username + ":" + $rootScope.credentials.password)} : {};
 
@@ -265,7 +330,7 @@ angular
                         $rootScope.user = response.data;
                         $sessionStorage.user = response.data;
                         $location.path("/upload");
-                        NotificationService.success("Successful login");
+                        NotificationService.success($sessionStorage.language == 'Romanian' ? "Logare cu succes!" : "Successful login");
                     } else {
                         console.log("Login failed.");
                         $rootScope.user = undefined;
@@ -273,7 +338,7 @@ angular
                     }
                 });
             } else {
-                NotificationService.warn("Empty credentials.");
+                NotificationService.warn($sessionStorage.language == 'Romanian' ? "Credentiale goale." : "Empty credentials.");
             }
 
             $('#signInModal').modal('hide');
@@ -298,15 +363,15 @@ angular
                         $rootScope.user = response.data;
                         $sessionStorage.user = response.data;
                         $location.path("/upload");
-                        NotificationService.success("Successful login");
+                        NotificationService.success($sessionStorage.language == 'Romanian' ? "Logare cu succes." : "Successful login");
                     } else {
-                        NotificationService.error("Username or email already exists.");
+                        NotificationService.error($sessionStorage.language == 'Romanian' ? "Username sau email deja existent." : "Username or email already exists.");
                         $rootScope.user = undefined;
                         $location.path("/login");
                     }
                 });
             } else {
-                NotificationService.warn("Empty credentials.");
+                NotificationService.warn($sessionStorage.language == 'Romanian' ? "Credentiale goale." : "Empty credentials.");
             }
 
             $('#signUpModal').modal('hide');
@@ -343,9 +408,6 @@ angular
         //
         // }
         $('#extensions').draggable();
-
-        $rootScope.positions = ['TOP_LEFT', 'TOP_CENTER', 'TOP_RIGHT', 'MIDDLE_LEFT', 'CENTER', 'MIDDLE_RIGHT', 'BOTTOM_LEFT', 'BOTTOM_CENTER', 'BOTTOM_RIGHT'];
-        $rootScope.positionsWithinText = ["None", "Left", "Middle", "Right", "Underlying"];
     })
 
     .config(function ($routeProvider, $httpProvider) {

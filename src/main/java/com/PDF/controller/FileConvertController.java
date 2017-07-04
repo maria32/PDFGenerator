@@ -44,11 +44,12 @@ public class FileConvertController {
         return storageService.deleteFile(userId, name, extension);
     }
 
-    @RequestMapping(value="/{userId}/generatePDF/{downloadMethod}", method = RequestMethod.GET, produces = "application/pdf")
+    @RequestMapping(value="/{userId}/generatePDF/{downloadMethod}/{pdfName}", method = RequestMethod.GET, produces = "application/pdf")
     @ResponseBody
     public ResponseEntity<byte[]> generatePDF(@PathVariable("userId") Long userId,
-                                              @PathVariable("downloadMethod") String downloadMethod) {
-        File file = storageService.generatePDF(userId, downloadMethod);
+                                              @PathVariable("downloadMethod") String downloadMethod,
+                                              @PathVariable("pdfName") String pdfName) {
+        File file = storageService.generatePDF(userId, downloadMethod, pdfName);
         try {
             byte[] contents = IOUtils.toByteArray(new FileInputStream(file));
             HttpHeaders headers = new HttpHeaders();

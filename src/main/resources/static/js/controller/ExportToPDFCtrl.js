@@ -8,25 +8,30 @@ angular.module('PDF')
 
         $rootScope.generatePDFPreview = function () {
             $scope.preview = !$scope.preview;
-
-            if ($rootScope.filesNo > 0 && $sessionStorage.user.id != null) {
-                console.log($scope.exportAs);
-                $http({
-                    url: '/convert/' + $sessionStorage.user.id + '/generatePDF/' + "none",
-                    method: "GET",
-                    headers: {'Accept': 'application/pdf'},
-                    responseType: 'arraybuffer'
-                }).then(function (response) {
-                    if (response.data != null) {
-                        var file = new Blob([response.data], {type: 'application/pdf'});
-                        var fileURL = URL.createObjectURL(file);
-                        $scope.content = $sce.trustAsResourceUrl(fileURL);
-                    } else {
-                        NotificationService.error($sessionStorage.language == 'Romanian' ? 'Eroare preview' : 'Preview error');
+            if ($scope.preview == true) {
+                if ($rootScope.filesNo > 0 && $sessionStorage.user.id != null) {
+                    console.log($scope.exportAs);
+                    console.log($scope.pdfName);
+                    if ($scope.pdfName == undefined) {
+                        $scope.pdfName = "GeneratedPDF";
                     }
-                });
-            } else {
-                NotificationService.warn($sessionStorage.language == 'Romanian' ? 'Conversia nu se poate realiza. Asigurati-va ca ati trecut prin Pasul 3 inainte de conversie' : "No files to convert! Make sure you clicked 'Step 3' before converting.");
+                    $http({
+                        url: '/convert/' + $sessionStorage.user.id + '/generatePDF/' + "none" + '/' + $scope.pdfName,
+                        method: "GET",
+                        headers: {'Accept': 'application/pdf'},
+                        responseType: 'arraybuffer'
+                    }).then(function (response) {
+                        if (response.data != null) {
+                            var file = new Blob([response.data], {type: 'application/pdf'});
+                            var fileURL = URL.createObjectURL(file);
+                            $scope.content = $sce.trustAsResourceUrl(fileURL);
+                        } else {
+                            NotificationService.error($sessionStorage.language == 'Romanian' ? 'Eroare preview' : 'Preview error');
+                        }
+                    });
+                } else {
+                    NotificationService.warn($sessionStorage.language == 'Romanian' ? 'Conversia nu se poate realiza. Asigurati-va ca ati trecut prin Pasul 3 inainte de conversie' : "No files to convert! Make sure you clicked 'Step 3' before converting.");
+                }
             }
         };
 
@@ -61,8 +66,10 @@ angular.module('PDF')
                     NotificationService.info($scope.conversionMessage);
                 }
 
+                console.log($scope.pdfName);
+                if ($scope.pdfName == undefined) {$scope.pdfName = "GeneratedPDF";}
                 $http({
-                    url: '/convert/' + $sessionStorage.user.id + '/generatePDF/' + $scope.exportAs,
+                    url: '/convert/' + $sessionStorage.user.id + '/generatePDF/' + $scope.exportAs + '/' + $scope.pdfName,
                     method: "GET",
                     headers: {'Accept': 'application/pdf'},
                 responseType: 'arraybuffer'
@@ -77,7 +84,7 @@ angular.module('PDF')
                             file = new Blob([response.data], {type: 'application/pdf'});
                             fileURL = URL.createObjectURL(file);
                             link = document.createElement("a");
-                            link.download = "GeneratedPDF";
+                            link.download = $scope.pdfName;
                             link.href = fileURL;
                             document.body.appendChild(link);
                             link.click();

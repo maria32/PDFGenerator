@@ -2,30 +2,34 @@
     <ul class="nav nav-pills">
         <li class="nav-item active">
             <a class="my-blue-nav-item" data-target="#image-settings-position-{{file.id}}"
-               data-toggle="tab">Position</a>
+               data-toggle="tab">{{filesSettings.image.position.title}}</a>
         </li>
         <li class="nav-item">
             <a class="my-blue-nav-item" data-target="#image-settings-scale-{{file.id}}"
-                data-toggle="tab">Scale</a>
+                data-toggle="tab">{{filesSettings.image.scale.title}}</a>
         </li>
         <li class="nav-item">
             <a class="my-blue-nav-item" data-target="#image-settings-rotate-{{file.id}}"
-                data-toggle="tab">Rotate</a>
+                data-toggle="tab">{{filesSettings.image.rotate}}</a>
         </li>
     </ul>
     <div class="tab-content left-blue-contour">
         <div class="tab-pane active" id="image-settings-position-{{file.id}}">
             <div class="bottom-blue-border">
-                <b>Wrapping style</b>
+                <b>{{filesSettings.image.position.wrappingStyle}}</b>
                 <br><br>
-                <select ng-options="p for p in positionsWithinText"
-                        ng-model="file.settings.wrappingStyle">
+                <select ng-model="file.settings.wrappingStyle">
+                    <option value="None">{{filesSettings.image.position.positionsWithinText[0]}}</option>
+                    <option value="Left">{{filesSettings.image.position.positionsWithinText[1]}}</option>
+                    <option value="Middle">{{filesSettings.image.position.positionsWithinText[2]}}</option><br><br>
+                    <option value="Right">{{filesSettings.image.position.positionsWithinText[3]}}</option>
+                    <option value="Underlying">{{filesSettings.image.position.positionsWithinText[4]}}</option>
                 </select><br>
             </div>
             <div ng-show="file.settings.wrappingStyle != 'Left' && file.settings.wrappingStyle != 'Middle' && file.settings.wrappingStyle != 'Right'">
-                <b>Position</b>
+                <b>{{filesSettings.image.position.title}}</b>
                 <br><br>
-                <input type="radio" name="position" ng-model="file.settings.absolutePosition" data-ng-value="false">Set position from ...<br>
+                <input type="radio" name="position" ng-model="file.settings.absolutePosition" data-ng-value="false">{{filesSettings.image.position.option1}}<br>
                 <!--<select ng-show="pos == 'predefined'" class="image-picker show-html" ng-model="pdfSettings.imageWatermark.positionPredefined">
                     <option data-img-src="../database/small/TOP_LEFT.png" data-img-class="first" data-img-alt="Page 1" value="TOP_LEFT">Top left</option>
                     <option data-img-src="../database/small/TOP_CENTER.png" data-img-alt="Page 2" value="TOP_CENTER">Top center</option>
@@ -38,18 +42,26 @@
                     <option data-img-src="../database/small/BOTTOM_RIGHT.png" data-img-alt="Page 12" data-img-class="last" value="BOTTOM_RIGHT">Bottom right</option>
                 </select>-->
                 <div class="margin-bottom margin-top" ng-show="file.settings.absolutePosition == false">
-                    <select ng-options="p for p in positions"
-                            ng-model="file.settings.positionPredefined">
+                    <select ng-model="file.settings.positionPredefined">
+                        <option value="TOP_LEFT">{{filesSettings.image.position.positions[0]}}</option>
+                        <option value="TOP_CENTER">{{filesSettings.image.position.positions[1]}}</option>
+                        <option value="TOP_RIGHT">{{filesSettings.image.position.positions[2]}}</option><br><br>
+                        <option value="MIDDLE_LEFT">{{filesSettings.image.position.positions[3]}}</option>
+                        <option value="CENTER">{{filesSettings.image.position.positions[4]}}</option>
+                        <option value="MIDDLE_RIGHT">{{filesSettings.image.position.positions[5]}}</option><br>
+                        <option value="BOTTOM_LEFT">{{filesSettings.image.position.positions[6]}}</option>
+                        <option value="BOTTOM_CENTER">{{filesSettings.image.position.positions[7]}}</option>
+                        <option value="BOTTOM_RIGHT">{{filesSettings.image.position.positions[8]}}</option>
                     </select><br>
                 </div>
 
-                <input type="radio" name="position" ng-model="file.settings.absolutePosition" data-ng-value="true">Set absolute position
+                <input type="radio" name="position" ng-model="file.settings.absolutePosition" data-ng-value="true">{{filesSettings.image.position.option2}}
                 <div id="position-absolute-inputs-blue" ng-show="file.settings.absolutePosition == true">
                     <div class="my-blue-left-border">
-                        <a class="btn btn-sm btn-link" data-toggle="collapse" data-target="#sizes-info">Sizes info</a>
+                        <a class="btn btn-sm btn-link" data-toggle="collapse" data-target="#sizes-info">{{filesSettings.image.position.sizesInfo}}</a>
                         <div class="collapse" id="sizes-info">
                             <div class="my-card-box light-blue">
-                                <b>A4 page</b> size: 595x842 px <br>(Your page may not be A4)
+                                <b>A4 page</b> size: 595x842 px
                                 <br>
                                 <b>{{file.settings.fileName}}</b> size: {{file.settings.width}}x{{file.settings.height}} px
                             </div>
@@ -65,7 +77,7 @@
                         <input class=" my-input-sm form-control" type="number" ng-model="file.settings.positionAbsolute.y">
                     </div>
                     <div>
-                        <span class="text-primary">x = 0 means left of page.<br> y = 0 means bottom of page</span>
+                        <span class="text-primary">{{filesSettings.image.position.x0}}<br> {{filesSettings.image.position.y0}}</span>
                     </div>
                 </div>
             </div>
@@ -74,9 +86,13 @@
         <!--Scale-->
         <div class="tab-pane margin-left" id="image-settings-scale-{{file.id}}">
             <div class="bottom-blue-border">
-                <input type="checkbox" ng-model="file.settings.fitToPage" value="true">Fit to page
+                <input type="checkbox" ng-model="file.settings.fitToPage" value="true">{{filesSettings.image.scale.fitToPage}} <a href="" ng-click="imagesFitToPage(file.settings.fitToPage)"><i class="glyphicon glyphicon glyphicon-forward"></i></a>
+                <div ng-show="file.settings.fitToPage == true">
+                    <input type="checkbox" ng-model="file.settings.pageMargins" value="true">{{filesSettings.image.scale.pageMargins}}
+                </div>
             </div>
             <div ng-show="file.settings.fitToPage == false">
+                {{filesSettings.image.scale.scaleByPercentage}}
                 <input id="my-slider" class="my-slider" type="range" name="scale" min="1" max="300" value="100"
                        ng-model="file.settings.scale">
                 <div class="input-group scale-40 margin-top margin-bottom">
@@ -88,7 +104,7 @@
         </div>
         <!--Rotate-->
         <div class="tab-pane margin-left" id="image-settings-rotate-{{file.id}}">
-            Rotate:
+            {{filesSettings.image.rotate}}:
             <input class="my-input-sm form-control inline margin-bottom" type="number" min="0" max="360" ng-model="file.settings.rotationDegrees">
             <div>
                 <span class="text-primary">minim = 0, maxim = 360</span>

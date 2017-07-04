@@ -10,6 +10,11 @@
     })
 </script>
 
+{{filesSettings.pdf.selectPages}}: <input type="text" ng-model="file.settings.pagesToBind" placeholder="1-2,4" required><br>
+<span class="text-danger" ng-show="!file.settings.pagesToBind">{{filesSettings.pdf.message}}</span>
+
+<!--
+
 <div class="row">
     <label class="col-sm-2">Page to bind</label>
     <select id="doc-pages-to-bind-{{file.id}}" class="col-sm-2" ng-model="printPages">
@@ -42,4 +47,4 @@
         <option value="portrait">Portrait</option>
         <option value="landscape">Landscape</option>
     </select>
-</div>
+</div>-->

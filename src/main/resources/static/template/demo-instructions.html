@@ -1,40 +1,74 @@
-<h2>What do I do?</h2>
+<h2>What can I do?</h2>
 <br>
 This is a short presentation of the functionalities of Go4PDF.
+<br>
+<span class="text-primary">{{uploadFiles.extensionsText.part1}}<a href="#!/extensions"><span class="badge">{{uploadFiles.extensionsText.part2}}</span></a>{{uploadFiles.extensionsText.part3}}</span>
 <br><br><br>
-<div class="col-xs-6 col-sm-3">
-    <p class="step">{{step}} 1</p>
-    <a class="my-btn my-btn-round my-btn-upload">
-        <i class="icon glyphicon glyphicon-upload"></i>
-        <p>{{uploadFiles.title}}</p>
-    </a>
-    <p>{{uploadFiles.description}}</p>
+<div>
+    <div class="col-md-2 col-xs-2 col-sm-2">
+        <a class="my-btn my-btn-round my-btn-upload">
+            <i class="icon glyphicon glyphicon-upload"></i>
+            <p>{{uploadFiles.title}}</p>
+        </a>
+    </div>
+    <div class="col-md-10 col-xs-10 col-sm-10 line-below">
+        <h4>{{uploadFiles.description}}</h4>
+        <ul>
+            <li>upload files by click or drag-and-drop</li>
+            <li>log section to see a short report on what has been uploaded, what errors might have appeared</li>
+        </ul>
+    </div>
+    <div class="col-md-12 col-xs-12 col-sm-12"></div>
 </div>
-<ul>
-    <li>upload files by click or drag-and-drop</li>
-    <li>log section to see a short report on what has been uploaded, what errors might have appeared</li>
-</ul>
-<div class="col-xs-6 col-sm-3">
-    <p class="step">{{step}} 2</p>
+
+
+
+
+<div class="col-md-2 col-xs-2 col-sm-2">
     <a class="my-btn my-btn-round my-btn-output">
         <i class="icon glyphicon glyphicon-file"></i>
         <p>{{outputSettings.title}}</p>
     </a>
-    <p>{{outputSettings.description}}</p>
 </div>
-<div class="col-xs-6 col-sm-3">
-    <p class="step">{{step}} 3</p>
+<div class="col-md-10 col-xs-10 col-sm-10 line-below">
+    <h4>{{outputSettings.description}}</h4>
+    <ul>
+        <li>password for resulted PDF</li>
+        <li>watermark</li>
+        <ul class="indent">
+            <li>text</li>
+            <li>image: upload image, settings for image (position - predefined or absolute, dimension, opacity)</li>
+        </ul>
+    </ul>
+</div>
+<div class="col-md-12 col-xs-12 col-sm-12"></div>
+
+
+
+
+<div class="col-md-2 col-xs-2 col-sm-2">
     <a class="my-btn my-btn-round my-btn-settings">
         <i class="icon glyphicon glyphicon-duplicate"></i>
         <p>{{filesSettings.title}}</p>
     </a>
-    <p>{{filesSettings.description}}</p>
 </div>
-<div class="col-xs-6 col-sm-3">
-    <p class="step">{{step}} 4</p>
+<div class="col-md-10 col-xs-10 col-sm-10 line-below">
+    <h4>{{filesSettings.description}}</h4>
+</div>
+<div class="col-md-12 col-xs-12 col-sm-12"></div>
+
+
+
+
+
+<div class="col-md-2 col-xs-2 col-sm-2">
     <a class="my-btn my-btn-round my-btn-export">
         <i class="icon glyphicon glyphicon-floppy-save"></i>
         <p>{{exportToPDF.title}}</p>
     </a>
-    <p>{{exportToPDF.description}}</p>
 </div>
+<div class="col-md-10 col-xs-10 col-sm-10 line-below">
+    <h4>{{exportToPDF.description}}</h4>
+</div>
+<div class="col-md-12 col-xs-12 col-sm-12"></div>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>

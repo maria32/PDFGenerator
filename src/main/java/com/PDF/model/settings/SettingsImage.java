@@ -9,8 +9,6 @@ import com.itextpdf.text.Image;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by martanase on 1/26/2017.
@@ -31,6 +29,7 @@ public class SettingsImage extends Settings {
     private float height;
     private ImageAlignment wrappingStyle = ImageAlignment.None;
     private boolean fitToPage = false;
+    private boolean pageMargins = false;
     private boolean absolutePosition = false;
     private Position positionPredefined = Position.CENTER;
     private PositionAbsolute positionAbsolute;
@@ -59,10 +58,11 @@ public class SettingsImage extends Settings {
         }
     }
 
-    public SettingsImage(File file, ImageAlignment wrappingStyle, boolean fitToPage, boolean absolutePosition, Position positionPredefined, PositionAbsolute positionAbsolute, int rotationDegrees, int scale) {
+    public SettingsImage(File file, ImageAlignment wrappingStyle, boolean fitToPage, boolean pageMargins, boolean absolutePosition, Position positionPredefined, PositionAbsolute positionAbsolute, int rotationDegrees, int scale) {
         this(file);
         this.wrappingStyle = wrappingStyle;
         this.fitToPage = fitToPage;
+        this.pageMargins = pageMargins;
         this.absolutePosition = absolutePosition;
         this.positionPredefined = positionPredefined;
         this.positionAbsolute = positionAbsolute;
@@ -102,6 +102,14 @@ public class SettingsImage extends Settings {
 
     public void setFitToPage(boolean fitToPage) {
         this.fitToPage = fitToPage;
+    }
+
+    public boolean isPageMargins() {
+        return pageMargins;
+    }
+
+    public void setPageMargins(boolean pageMargins) {
+        this.pageMargins = pageMargins;
     }
 
     public boolean isAbsolutePosition() {

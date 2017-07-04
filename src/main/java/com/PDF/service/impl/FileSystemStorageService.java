@@ -5,17 +5,24 @@ import com.PDF.exception.StorageFileNotFoundException;
 import com.PDF.model.*;
 import com.PDF.model.settings.SettingsImage;
 import com.PDF.model.settings.SettingsPDF;
+import com.PDF.model.settings.SettingsWord;
 import com.PDF.service.PDFSettingsService;
 import com.PDF.service.StorageService;
 import com.PDF.service.UserService;
 import com.PDF.service.UserSessionService;
 import com.PDF.utils.MailSender;
+import com.itextpdf.awt.PdfGraphics2D;
 import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfImportedPage;
-import com.itextpdf.text.pdf.PdfReader;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.*;
+import com.itextpdf.text.pdf.codec.GifImage;
 import com.itextpdf.tool.xml.XMLWorkerHelper;
+import org.apache.batik.bridge.BridgeContext;
+import org.apache.batik.bridge.GVTBuilder;
+import org.apache.batik.bridge.UserAgentAdapter;
+import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
+import org.apache.batik.gvt.GraphicsNode;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +31,9 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.w3c.dom.svg.SVGDocument;
 
+import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
@@ -273,7 +282,7 @@ public class FileSystemStorageService implements StorageService {
 
     }
 
-    public File generatePDF(Long userId, String downloadMethod) {
+    public File generatePDF(Long userId, String downloadMethod, String pdfName) {
         LOGGER.log(Level.INFO, "PDF merger started");
         generationProgressBar = 0;
         File pdfFile = new File(getUserDirPath().toString() + "/output/GeneratedPDF.pdf");
@@ -327,8 +336,8 @@ public class FileSystemStorageService implements StorageService {
                     System.out.println(myFile.getName());
                     switch (myFile.getSettings().getType()) {
                         case "image":
-                            Image image = applyImageSettings(myFile, document);
-                            document.add(image);
+                                Image image = applyImageSettings(myFile, document, pdfWriter);
+                                document.add(image);
                             break;
 
                         case "text":
@@ -359,27 +368,24 @@ public class FileSystemStorageService implements StorageService {
                         case "word":
                             String wordJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/", "") + "scripts/SaveWordAsPDF.js";
                             String wordToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
-                            System.out.println(wordToPDFPath);
                             if (fileToPDFAndMerge(myFile, wordJsPath, wordToPDFPath)) {
-                                addPdf(document, pdfWriter, reader, new File(wordToPDFPath));
+                                addPdf(document, pdfWriter, reader, new File(wordToPDFPath), myFile);
                             }
                             break;
 
                         case "excel":
                             String excelJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/", "") + "scripts/SaveExcelAsPDF.js";
                             String excelToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + myFile.getExtension() + ".pdf";
-                            System.out.println(excelToPDFPath);
                             if (fileToPDFAndMerge(myFile, excelJsPath, excelToPDFPath)) {
-                                addPdf(document, pdfWriter, reader, new File(excelToPDFPath));
+                                addPdf(document, pdfWriter, reader, new File(excelToPDFPath), myFile);
                             }
                             break;
 
                         case "powerPoint":
                             String pptJsPath = getClass().getProtectionDomain().getCodeSource().getLocation().toString().replace("file:/", "") + "scripts/SavePowerPointAsPDF.js";
                             String pptToPDFPath = getUserTempDir() + FilenameUtils.getBaseName(myFile.getName()) + ".pdf";
-                            System.out.println(pptToPDFPath);
                             if (fileToPDFAndMerge(myFile, pptJsPath, pptToPDFPath)) {
-                                addPdf(document, pdfWriter, reader, new File(pptToPDFPath));
+                                addPdf(document, pdfWriter, reader, new File(pptToPDFPath), myFile);
                             }
                             break;
 
@@ -401,7 +407,7 @@ public class FileSystemStorageService implements StorageService {
 
                 if ("email".equals(downloadMethod)) {
                     System.out.println(existsUser.getEmail());
-                    MailSender.sendMail(existsUser.getEmail(), pdfFile.getAbsolutePath());
+                    MailSender.sendMail(existsUser.getEmail(), pdfFile.getAbsolutePath(), pdfName);
                 }
                 //opening the file in default application (Acrobat Reader if installed)
                 //Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + pdfFile);
@@ -413,15 +419,33 @@ public class FileSystemStorageService implements StorageService {
         return pdfFile;
     }
 
-    private Image applyImageSettings(MyFile myFile, Document document) throws IOException, BadElementException {
+    private Image applyImageSettings(MyFile myFile, Document document, PdfWriter pdfWriter) throws IOException, BadElementException {
         SettingsImage settingsImage = (SettingsImage) myFile.getSettings();
         if (settingsImage != null) {
-            Image image = Image.getInstance(myFile.getFile().getPath());
+            Image image;
+            if ("svg".equals(myFile.getExtension())) {
+                SVGDocument svgDoc = new SAXSVGDocumentFactory(null).createSVGDocument(null, new FileReader(myFile.getFile().getAbsolutePath()));
+
+                // Try to read embedded height and width
+                float svgWidth = Float.parseFloat(svgDoc.getDocumentElement().getAttribute("width").replaceAll("[^0-9.,]", ""));
+                float svgHeight = Float.parseFloat(svgDoc.getDocumentElement().getAttribute("height").replaceAll("[^0-9.,]", ""));
+
+                PdfTemplate svgTempl = PdfTemplate.createTemplate(pdfWriter, svgWidth, svgHeight);
+                Graphics2D g2d = new PdfGraphics2D(svgTempl, svgTempl.getWidth(), svgTempl.getHeight());
+                GraphicsNode chartGfx = (new GVTBuilder()).build(new BridgeContext(new UserAgentAdapter()), svgDoc);
+                chartGfx.paint(g2d);
+                g2d.dispose();
+
+                image = new ImgTemplate(svgTempl);
+            } else {
+                image = Image.getInstance(myFile.getFile().getPath());
+            }
 
             image.scalePercent(settingsImage.getScale());
             image.setRotationDegrees(settingsImage.getRotationDegrees());
             if (settingsImage.isFitToPage()){
-                image.scaleToFit(PageSize.A4.getWidth() - (document.leftMargin() + document.rightMargin()), PageSize.A4.getHeight() - (document.topMargin() + document.bottomMargin()));
+                image.scaleToFit(PageSize.A4.getWidth() - (settingsImage.isPageMargins() ? document.leftMargin() + document.rightMargin() : 0),
+                        PageSize.A4.getHeight() - (settingsImage.isPageMargins() ? document.topMargin() + document.bottomMargin() : 0));
             }
 
             if (settingsImage.getWrappingStyle() != SettingsImage.ImageAlignment.None){
@@ -501,11 +525,17 @@ public class FileSystemStorageService implements StorageService {
         }
     }
 
-    private void addPdf(Document document, PdfWriter pdfWriter, List<PdfReader> reader, File file) throws IOException {
+    private void addPdf(Document document, PdfWriter pdfWriter, List<PdfReader> reader, File file, MyFile myFile) throws IOException {
         Rectangle originalPageSize = pdfWriter.getPageSize();
         document.newPage();
         PdfContentByte cb = pdfWriter.getDirectContent();
         reader.add(new PdfReader(file.getAbsolutePath()));
+        if (myFile.getSettings() instanceof SettingsWord){
+            SettingsWord settingsWord = (SettingsWord) myFile.getSettings();
+            if (!settingsWord.equals("All")) {
+                reader.get(reader.size() - 1).selectPages(settingsWord.getPagesToBind());
+            }
+        }
         for(int i = 1; i <= reader.get(reader.size()-1).getNumberOfPages(); i++) {
             Rectangle pageSize = reader.get(reader.size()-1).getPageSize(i);
             document.setPageSize(pageSize);

@@ -37,7 +37,7 @@ public interface StorageService {
 
     void updateSettingsOfFile(Long userId, List<MyFile> files);
 
-    File generatePDF(Long userId, String downloadMethod);
+    File generatePDF(Long userId, String downloadMethod, String pdfName);
 
     int getGenerationProgressBar();
 

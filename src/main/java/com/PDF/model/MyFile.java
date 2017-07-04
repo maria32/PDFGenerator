@@ -19,10 +19,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MyFile<S extends Settings> {
 
     private static final AtomicInteger count = new AtomicInteger(0);
-    public static final List<String> image = Arrays.asList("jpg", "png", "bmp");
+    public static final List<String> image = Arrays.asList("jpg", "png", "bmp", "gif", "tif", "tiff", "svg", "svm", "pcx", "mov");
     public static final List<String> word = Arrays.asList("doc", "docx", "odt", "rtf");
     public static final List<String> excel = Arrays.asList("xls", "xlsx", "xla", "xlt", "ods", "csv", "xlsb");
-    public static final List<String> powerPoint = Arrays.asList("ppt", "pptx");
+    public static final List<String> powerPoint = Arrays.asList("ppt", "pptx", "pps", "ppsx");
     public static final List<String> text = Arrays.asList("txt", "rtf");
     public static final List<String> pdf = Arrays.asList("pdf");
     public static final List<String> html = Arrays.asList("html");

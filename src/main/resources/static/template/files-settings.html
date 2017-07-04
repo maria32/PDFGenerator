@@ -1,32 +1,35 @@
 <!--Uploaded files-->
 <div ng-show="files == null || files.length == 0">
-    No files uploaded.
+    {{filesSettings.noFilesUploaded}}
 </div>
 <ul class="file-item" ui-sortable="sortableFileSettings" ng-model="files">
-        <div class="files panel-group" ng-repeat="file in files" style="display: flex;">
-            <div class="panel">
-                <div class=" panel-heading" role="tab" id="heading-{{file.id}}" style="cursor: move;">
-                    <h4 class="files panel-title">
-                        <span class="index badge">{{$index + 1}} </span>
-                        <a role="button" data-toggle="collapse" data-parent="#uploaded" data-target="#settings-{{file.id}}" aria-expanded="true" style="cursor: default;">
-                            {{file.name}}.{{file.extension}} <span class="red-font" ng-show="file.settings.type == null">(unknown)</span>
-                        </a>
-                        <a style="cursor: default;"><i extension="button" class="glyphicon glyphicon-remove" ng-click="deleteFile(file, $index)"></i></a>
-                    </h4>
-                </div>
-                <!--File settings collapsible-->
-                <div id="settings-{{file.id}}" class="margin my-panel-content panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{file.id}}">
-                    <div class="panel-body">
-                        <div ng-show="file.settings.type != 'pdf'">
-                            <input type="checkbox" id="settings-{{file.id}}-page-break" ng-model="file.settings.pageBreak">Start on a new page
-                        </div>
-                        <ng-include src=" 'template/settings/' + file.settings.type + '.html' "></ng-include>
+    <div ng-show="files.length > 0">
+        <button class="btn btn-info right" ng-click="saveAllChanges()">{{filesSettings.saveButton}}</button>
+    </div>
+    <div class="files panel-group" ng-repeat="file in files" style="display: flex;">
+        <div class="panel">
+            <div class=" panel-heading" role="tab" id="heading-{{file.id}}" style="cursor: move;">
+                <h4 class="files panel-title">
+                    <span class="index badge">{{$index + 1}} </span>
+                    <a role="button" data-toggle="collapse" data-parent="#uploaded" data-target="#settings-{{file.id}}" aria-expanded="true" style="cursor: default;">
+                        {{file.name}}.{{file.extension}} <span class="red-font" ng-show="file.settings.type == null">(unknown)</span>
+                    </a>
+                    <a style="cursor: default;"><i extension="button" class="glyphicon glyphicon-remove" ng-click="deleteFile(file, $index)"></i></a>
+                </h4>
+            </div>
+            <!--File settings collapsible-->
+            <div id="settings-{{file.id}}" class="margin my-panel-content panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{file.id}}">
+                <div class="panel-body">
+                    <div ng-show="file.settings.type != 'pdf'">
+                        <input type="checkbox" id="settings-{{file.id}}-page-break" ng-model="file.settings.pageBreak">{{filesSettings.newPage}}
                     </div>
+                    <ng-include src=" 'template/settings/' + file.settings.type + '.html' "></ng-include>
                 </div>
             </div>
         </div>
-        <div ng-show="files.length > 0">
-            <button class="btn btn-info right" ng-click="saveAllChanges()">Save all changes</button>
-        </div>
-    </ul>
+    </div>
+    <div ng-show="files.length > 0">
+        <button class="btn btn-info right" ng-click="saveAllChanges()">{{filesSettings.saveButton}}</button>
+    </div>
+</ul>
 <br><br>

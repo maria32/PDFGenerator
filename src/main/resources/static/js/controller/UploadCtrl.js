@@ -82,7 +82,7 @@ angular.module('PDF')
                                     $scope.log;
                             });
                         } else {
-                            NotificationService.error("File '" + file.name + "' exceeded the maximum size allowed (5MB). File was not uploaded.");
+                            NotificationService.error($sessionStorage.language == 'Romanian' ? "Fisierul '" + file.name + "' depaseste limita de 5MB. Fisierul nu a fost incarcat." : "File '" + file.name + "' exceeded the maximum size allowed (5MB). File was not uploaded.");
                         }
                     }
                 }

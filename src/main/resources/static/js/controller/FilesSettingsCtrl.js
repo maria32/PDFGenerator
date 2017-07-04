@@ -48,7 +48,7 @@ angular.module('PDF')
                     $sessionStorage.filesNo = $rootScope.filesNo;
                     // $("doc-pages-to-bind-1").val($scope.files[0].settings.pagesToBind);
                 } else {
-                    NotificationService.error("No Files or files not retrieved correctly");
+                    NotificationService.error($sessionStorage.language == 'Romanian' ? "Niciun fisier sau fisier neprimite corect." : "No Files or files not retrieved correctly");
                 }
             });
 
@@ -65,6 +65,15 @@ angular.module('PDF')
             }
         });*/
 
+        $scope.imagesFitToPage = function(fitToPage) {
+            console.log("fitToPage all");
+            for(var i = 0; i < $scope.files.length; i++) {
+                if ($scope.files[i].settings.type == 'image'){
+                    $scope.files[i].settings.fitToPage = fitToPage;
+                }
+            }
+        };
+
         $scope.deleteFile = function (file, index) {
             Upload.upload({
                 method: 'DELETE',
@@ -75,7 +84,7 @@ angular.module('PDF')
                     $scope.files.splice(index, 1);
                     $rootScope.filesNo = $scope.files.length;
                 }else{
-                    NotificationService.error('Failed to delete' + file.name + '.' + file.extension);
+                    NotificationService.error($sessionStorage.language == 'Romanian' ? 'Eroare stergere' + file.name + '.' + file.extension : 'Failed to delete' + file.name + '.' + file.extension);
                 }
             });
         };
@@ -99,16 +108,17 @@ angular.module('PDF')
                     url: '/update/' + $sessionStorage.user.id + '/order-of-files/',
                     data: JSON.stringify(listOfOrder),
                     success: function(result){
-                        NotificationService.info("Updated order of files");
+                        NotificationService.info($sessionStorage.language == 'Romanian' ? "Ordine fisiere reimprospatata." : "Updated order of files");
                     },
                     error: function(e) {
-                        NotificationService.error('Error updating order of files: ' + e);
+                        NotificationService.error($sessionStorage.language == 'Romanian' ? "Eroare reimprospatare ordine fisiere" : 'Error updating order of files: ');
                     }});
             }
         };
 
         $scope.saveAllChanges = function(){
             // page breaks
+            console.log($scope.files);
             for(var i = 0; i < $scope.files.length; i++) {
                 var file = $scope.files[i];
                 $scope.files[i].settings.pageBreak = document.getElementById('settings-' + file.id +  '-page-break').checked;
@@ -126,7 +136,7 @@ angular.module('PDF')
                 url: '/update/' + $sessionStorage.user.id + '/settings',
                 data: JSON.stringify($scope.files),
                 success: function(result){
-                    NotificationService.success("Saved changes.");
+                    NotificationService.success($sessionStorage.language == 'Romanian' ? "Setari salvate." : "Saved changes.");
                 },
                 error: function(e) {
                     console.log(e);

@@ -11,7 +11,7 @@
     <div class="my-content-container">
         <p class="popover-title my-title">{{exportToPDF.method}}</p>
         <br>
-        <input type="text" name="pdf-name" placeholder="{{exportToPDF.pdfName}}"><br>
+        <input type="text" name="pdf-name" ng-model="pdfName" placeholder="{{exportToPDF.pdfName}}"><br>
         <input type="radio" name="export_to" value="download" ng-model="exportAs"/> {{exportToPDF.option1}}<br>
         <input type="radio" name="export_to" value="email" ng-model="exportAs"/> {{exportToPDF.option2}}
         <br>

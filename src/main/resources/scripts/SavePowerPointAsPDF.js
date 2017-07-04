@@ -7,7 +7,7 @@ var pptPath = WScript.Arguments(0);
 var pptParentFolder = fso.getParentFolderName(pptPath);
 pptPath = fso.GetAbsolutePathName(pptPath);
 
-var pdfPath = pptParentFolder + "/temp/" + fso.getFileName(pptPath).replace(/\.ppt[^.]*$/, ".pdf");
+var pdfPath = pptParentFolder + "/temp/" + fso.getFileName(pptPath).replace(/\.(ppt|pptx|pps|ppsx)$/, ".pdf");
 var objWord = null;
 
 try
